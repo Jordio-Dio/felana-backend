@@ -1,0 +1,9 @@
+src/main/resources/application-local.properties
+
+#Build Maven
+target/
+
+# Configurations d'IDE
+.vscode/
+.idea/
+*.iml
