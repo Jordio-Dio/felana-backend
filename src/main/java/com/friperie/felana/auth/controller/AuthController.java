@@ -48,11 +48,14 @@ public class AuthController {
      * de la méthode n'est JAMAIS exécuté.
      *
      * Cela fonctionne uniquement parce que :
-     *  1. @EnableMethodSecurity(prePostEnabled = true) est actif (SecurityConfig).
-     *  2. User.getAuthorities() renvoie bien "ROLE_GERANT" pour un compte GERANT.
+     * 1. @EnableMethodSecurity(prePostEnabled = true) est actif (SecurityConfig).
+     * 2. User.getAuthorities() renvoie bien "ROLE_GERANT" pour un compte GERANT.
      */
-    @PreAuthorize("hasRole('GERANT')")
+    
+    // PreAuthorize("hasRole('GERANT')")
+    @PreAuthorize("hasAuthority('ROLE_GERANT')")
     @PostMapping("/register-vendeur")
+
     public ResponseEntity<Void> registerVendeur(@Valid @RequestBody RegisterVendeurRequest request) {
         authenticationService.registerVendeur(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();

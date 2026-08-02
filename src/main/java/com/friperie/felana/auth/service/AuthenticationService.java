@@ -31,7 +31,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     /**
-     * Login : délègue la vérification username/password à l'
+     * Login : délègue la vérification email/password à l'
      * AuthenticationManager (qui utilise notre DaoAuthenticationProvider,
      * lui-même configuré avec UserDetailsServiceImpl + BCryptPasswordEncoder).
      * Si les identifiants sont mauvais, une BadCredentialsException est levée
@@ -40,12 +40,13 @@ public class AuthenticationService {
      */
     @Transactional
     public AuthResponse login(LoginRequest request) {
+        // Authentification via l'email et le mot de passe
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.username(), request.password())
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
         // Si on arrive ici, l'authentification a réussi (sinon une exception a été levée avant).
-        User user = userRepository.findByUsername(request.username())
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalStateException("Utilisateur authentifié introuvable."));
 
         String accessToken = jwtService.generateAccessToken(user);
@@ -88,8 +89,14 @@ public class AuthenticationService {
                     "Un compte existe déjà avec ce nom d'utilisateur.");
         }
 
+        if (userRepository.existsByEmail(request.email())) {
+            throw new DataIntegrityViolationException(
+                    "Un compte existe déjà avec cette adresse e-mail.");
+        }
+
         User vendeur = User.builder()
                 .username(request.username())
+                .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .role(Role.VENDEUR) // <-- forcé côté serveur, jamais lu depuis la requête
                 .enabled(true)

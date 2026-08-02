@@ -21,7 +21,7 @@ import java.util.List;
  * dédiée, mais ce n'est pas nécessaire ici.
  */
 @Entity
-@Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = "username"))
+@Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames =  "email"))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -33,9 +33,12 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** On utilise le nom d'utilisateur (ou l'email) comme identifiant de connexion. */
     @Column(nullable = false, unique = true)
     private String username;
+
+    /** On utilise le nom d'utilisateur (ou l'email) comme identifiant de connexion. */
+    @Column(nullable = false, unique = true)
+    private String email;
 
     /** Toujours stocké encodé (BCrypt), jamais en clair. */
     @Column(nullable = false)
@@ -77,7 +80,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return username;
+        return this.email;
     }
 
     @Override
