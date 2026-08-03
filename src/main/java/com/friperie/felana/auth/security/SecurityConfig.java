@@ -26,15 +26,18 @@ import java.util.List;
  * Configuration centrale de Spring Security.
  *
  * @EnableMethodSecurity active la sécurité au niveau des méthodes, ce qui est
- * INDISPENSABLE pour que @PreAuthorize("hasRole('GERANT')") fonctionne sur
- * le endpoint /api/auth/register-vendeur.
+ *                       INDISPENSABLE pour
+ *                       que @PreAuthorize("hasRole('GERANT')") fonctionne sur
+ *                       le endpoint /api/auth/register-vendeur.
  *
- * Points clés :
- * - SessionCreationPolicy.STATELESS : on n'utilise PAS de session HTTP côté
- *   serveur. Chaque requête doit s'authentifier elle-même via le JWT.
- *   C'est cohérent avec une architecture JWT.
- * - Le filtre JwtAuthenticationFilter est inséré AVANT
- *   UsernamePasswordAuthenticationFilter dans la chaîne.
+ *                       Points clés :
+ *                       - SessionCreationPolicy.STATELESS : on n'utilise PAS de
+ *                       session HTTP côté
+ *                       serveur. Chaque requête doit s'authentifier elle-même
+ *                       via le JWT.
+ *                       C'est cohérent avec une architecture JWT.
+ *                       - Le filtre JwtAuthenticationFilter est inséré AVANT
+ *                       UsernamePasswordAuthenticationFilter dans la chaîne.
  */
 @Configuration
 @EnableWebSecurity
@@ -48,18 +51,28 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // API stateless consommée par un front séparé (SPA/mobile) -> pas besoin de protection CSRF.
+                // API stateless consommée par un front séparé (SPA/mobile) -> pas besoin de
+                // protection CSRF.
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         // Login et refresh doivent être accessibles sans être déjà authentifié.
-                        .requestMatchers("/api/auth/login", "/api/auth/refresh-token").permitAll()
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/refresh-token",
+                                "/api/auth/verify-email",
+                                "/api/auth/resend-verification",
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password",
+                                "/v3/api-docs/**", // Pour le swagger-ui, accessible sans authentification.
+                                "/swagger-ui/**",
+                                "/swagger-ui.html")
+                        .permitAll()
                         // Tout le reste de /api/auth/** (ex: register-vendeur) nécessite une
                         // authentification ; la restriction fine par rôle est faite via
                         // @PreAuthorize directement sur le contrôleur.
                         .requestMatchers("/api/auth/**").authenticated()
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
@@ -92,7 +105,8 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // BCrypt : hachage à sens unique + salage automatique, standard de fait pour les mots de passe.
+        // BCrypt : hachage à sens unique + salage automatique, standard de fait pour
+        // les mots de passe.
         return new BCryptPasswordEncoder();
     }
 

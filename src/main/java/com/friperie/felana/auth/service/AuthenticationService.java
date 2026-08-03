@@ -1,11 +1,15 @@
 package com.friperie.felana.auth.service;
 
+import com.friperie.felana.auth.domain.OtpPurpose;
 import com.friperie.felana.auth.domain.RefreshToken;
 import com.friperie.felana.auth.domain.Role;
 import com.friperie.felana.auth.domain.User;
-import com.friperie.felana.auth.dto.AuthResponse;
-import com.friperie.felana.auth.dto.LoginRequest;
-import com.friperie.felana.auth.dto.RegisterVendeurRequest;
+import com.friperie.felana.auth.dto.request.ForgotPasswordRequest;
+import com.friperie.felana.auth.dto.request.LoginRequest;
+import com.friperie.felana.auth.dto.request.RegisterVendeurRequest;
+import com.friperie.felana.auth.dto.request.ResetPasswordRequest;
+import com.friperie.felana.auth.dto.request.VerifyEmailRequest;
+import com.friperie.felana.auth.dto.response.AuthResponse;
 import com.friperie.felana.auth.repository.UserRepository;
 import com.friperie.felana.auth.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +33,7 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationManager authenticationManager;
+    private final OtpService otpService;
 
     /**
      * Login : délègue la vérification email/password à l'
@@ -36,16 +41,17 @@ public class AuthenticationService {
      * lui-même configuré avec UserDetailsServiceImpl + BCryptPasswordEncoder).
      * Si les identifiants sont mauvais, une BadCredentialsException est levée
      * automatiquement -> Spring renverra un 401/403 (à gérer via un
+     * 
      * @ExceptionHandler global si vous voulez un message JSON personnalisé).
      */
     @Transactional
     public AuthResponse login(LoginRequest request) {
         // Authentification via l'email et le mot de passe
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-        // Si on arrive ici, l'authentification a réussi (sinon une exception a été levée avant).
+        // Si on arrive ici, l'authentification a réussi (sinon une exception a été
+        // levée avant).
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalStateException("Utilisateur authentifié introuvable."));
 
@@ -103,5 +109,42 @@ public class AuthenticationService {
                 .build();
 
         userRepository.save(vendeur);
+        otpService.generateAndSend(vendeur, OtpPurpose.EMAIL_VERIFICATION);
+    }
+
+    @Transactional
+    public void resendVerificationEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Aucun compte avec cet email."));
+        if (user.isEmailVerified()) {
+            throw new IllegalStateException("Cet email est déjà vérifié.");
+        }
+        otpService.generateAndSend(user, OtpPurpose.EMAIL_VERIFICATION);
+    }
+
+    @Transactional
+    public void verifyEmail(VerifyEmailRequest request) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new IllegalArgumentException("Aucun compte avec cet email."));
+        otpService.verify(user, OtpPurpose.EMAIL_VERIFICATION, request.code());
+        user.setEmailVerified(true);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+        userRepository.findByEmail(request.email())
+                .ifPresent(user -> otpService.generateAndSend(user, OtpPurpose.PASSWORD_RESET));
+        // Volontairement : on ne lève AUCUNE exception si l'email n'existe pas,
+        // pour ne pas révéler quels emails sont enregistrés (énumération de comptes).
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new IllegalArgumentException("Requête invalide."));
+        otpService.verify(user, OtpPurpose.PASSWORD_RESET, request.code());
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
     }
 }

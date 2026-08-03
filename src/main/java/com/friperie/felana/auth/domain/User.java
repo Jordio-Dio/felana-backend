@@ -55,6 +55,13 @@ public class User implements UserDetails {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean emailVerified = false;
+
+
+
+    /// LES FONCTIONS ET LES METHODES DE L'INTERFACE UserDetails SONT EN BAS DE CLASSE, APRÈS LES GETTERS/SETTERS ET LE CONSTRUCTEUR.   
     @PrePersist
     protected void onCreate() {
         this.createdAt = Instant.now();

@@ -1,4 +1,4 @@
-package com.friperie.felana.auth.dto;
+package com.friperie.felana.auth.dto.response;
 
 /**
  * Réponse renvoyée après un login ou un refresh réussi.
