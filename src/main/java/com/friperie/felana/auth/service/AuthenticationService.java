@@ -119,7 +119,13 @@ public class AuthenticationService {
         if (user.isEmailVerified()) {
             throw new IllegalStateException("Cet email est déjà vérifié.");
         }
-        otpService.generateAndSend(user, OtpPurpose.EMAIL_VERIFICATION);
+        try {
+            otpService.generateAndSend(user, OtpPurpose.EMAIL_VERIFICATION);
+        } catch (org.springframework.mail.MailException e) {
+            throw new IllegalStateException(
+                    "Impossible d'envoyer l'email de vérification. Vérifiez la configuration SMTP ou réessayez plus tard.",
+                    e);
+        }
     }
 
     @Transactional

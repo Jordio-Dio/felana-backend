@@ -8,6 +8,7 @@ import com.friperie.felana.auth.dto.request.ResetPasswordRequest;
 import com.friperie.felana.auth.dto.request.VerifyEmailRequest;
 import com.friperie.felana.auth.dto.response.AuthResponse;
 import com.friperie.felana.auth.service.AuthenticationService;
+import com.friperie.felana.auth.dto.request.ResendVerificationRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -76,8 +77,8 @@ public class AuthController {
     }
 
     @PostMapping("/resend-verification")
-    public ResponseEntity<Void> resendVerification(@RequestParam String email) {
-        authenticationService.resendVerificationEmail(email);
+    public ResponseEntity<Void> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
+        authenticationService.resendVerificationEmail(request.email());
         return ResponseEntity.ok().build();
     }
 
