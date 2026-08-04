@@ -119,7 +119,7 @@ public class AuthenticationService {
         if (user.isEmailVerified()) {
             throw new IllegalStateException("Cet email est déjà vérifié.");
         }
-        try {
+        try {   
             otpService.generateAndSend(user, OtpPurpose.EMAIL_VERIFICATION);
         } catch (org.springframework.mail.MailException e) {
             throw new IllegalStateException(
