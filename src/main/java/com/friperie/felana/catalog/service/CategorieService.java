@@ -3,8 +3,9 @@ package com.friperie.felana.catalog.service;
 import com.friperie.felana.catalog.domain.Categorie;
 import com.friperie.felana.catalog.dto.request.CategorieRequest;
 import com.friperie.felana.catalog.dto.response.CategorieResponse;
-import com.friperie.felana.catalog.exception.ResourceNotFoundException;
 import com.friperie.felana.catalog.repository.CategorieRepository;
+import com.friperie.felana.common.exception.ResourceNotFoundException;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;

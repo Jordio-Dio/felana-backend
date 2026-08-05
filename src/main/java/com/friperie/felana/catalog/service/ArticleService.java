@@ -4,9 +4,10 @@ import com.friperie.felana.catalog.domain.Article;
 import com.friperie.felana.catalog.domain.Categorie;
 import com.friperie.felana.catalog.dto.request.ArticleCreateRequest;
 import com.friperie.felana.catalog.dto.request.ArticleUpdateRequest;
-import com.friperie.felana.catalog.exception.ResourceNotFoundException;
 import com.friperie.felana.catalog.repository.ArticleRepository;
 import com.friperie.felana.catalog.repository.ArticleSpecifications;
+import com.friperie.felana.common.exception.ResourceNotFoundException;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -93,7 +94,10 @@ public class ArticleService {
         articleRepository.delete(article);
     }
 
-    /** Utilisé plus tard par le module Commandes pour décrémenter le stock à la vente. */
+    /**
+     * Utilisé plus tard par le module Commandes pour décrémenter le stock à la
+     * vente.
+     */
     @Transactional
     public void decrementerStock(Long articleId, int quantite) {
         Article article = findEntityById(articleId);
@@ -102,6 +106,14 @@ public class ArticleService {
                     "Stock insuffisant pour l'article '" + article.getNom() + "'.");
         }
         article.setQuantiteStock(article.getQuantiteStock() - quantite);
+        articleRepository.save(article);
+    }
+
+    /** Utilisé lors de l'annulation d'une commande : remet la quantité au stock. */
+    @Transactional
+    public void restaurerStock(Long articleId, int quantite) {
+        Article article = findEntityById(articleId);
+        article.setQuantiteStock(article.getQuantiteStock() + quantite);
         articleRepository.save(article);
     }
 }

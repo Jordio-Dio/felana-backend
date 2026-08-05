@@ -1,4 +1,4 @@
-package com.friperie.felana.catalog.exception;
+package com.friperie.felana.common.exception;
 
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String message) {
