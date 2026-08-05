@@ -18,7 +18,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/articles")
+@RequestMapping("/articles")
 @RequiredArgsConstructor
 public class ArticleController {
 

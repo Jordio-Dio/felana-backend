@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -25,8 +26,8 @@ import java.io.IOException;
  * 2. Extraire le username du JWT.
  * 3. Charger le UserDetails correspondant en base.
  * 4. Si le token est valide, "peupler" le SecurityContext avec un objet
- *    Authentication : c'est CE qui fait que @PreAuthorize("hasRole('GERANT')")
- *    peut ensuite fonctionner plus loin dans la requête.
+ * Authentication : c'est CE qui fait que @PreAuthorize("hasRole('GERANT')")
+ * peut ensuite fonctionner plus loin dans la requête.
  *
  * Si aucun header n'est présent, ou s'il est invalide, on laisse simplement
  * passer la requête sans authentifier l'utilisateur : c'est la suite de la
@@ -39,17 +40,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
-    ) throws ServletException, IOException {
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
 
-        // Pas de header, ou pas au format attendu -> on laisse passer sans authentifier.
+        // Pas de header, ou pas au format attendu -> on laisse passer sans
+        // authentifier.
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -77,13 +79,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null, // pas de credentials nécessaires, on est déjà authentifié via le token
-                        userDetails.getAuthorities()
-                );
+                        userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+        return path.startsWith("/v3/api-docs/")
+                || path.startsWith("/swagger-ui/"); 
     }
 }

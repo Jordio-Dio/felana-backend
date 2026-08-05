@@ -3,12 +3,14 @@ package com.friperie.felana.auth.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -51,28 +53,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // API stateless consommée par un front séparé (SPA/mobile) -> pas besoin de
-                // protection CSRF.
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        // Login et refresh doivent être accessibles sans être déjà authentifié.
-                        .requestMatchers(
-                                "/api/auth/login",
-                                "/api/auth/refresh-token",
-                                "/api/auth/verify-email",
-                                "/api/auth/resend-verification",
-                                "/api/auth/forgot-password",
-                                "/api/auth/reset-password",
-                                "/v3/api-docs/**", // Pour le swagger-ui, accessible sans authentification.
-                                "/swagger-ui/**",
-                                "/swagger-ui.html")
-                        .permitAll()
-                        // Tout le reste de /api/auth/** (ex: register-vendeur) nécessite une
-                        // authentification ; la restriction fine par rôle est faite via
-                        // @PreAuthorize directement sur le contrôleur.
-                        .requestMatchers("/api/auth/**").authenticated()
-                        .anyRequest().authenticated())
+        .requestMatchers(
+                "/v3/api-docs",
+                "/v3/api-docs/**",
+                "/swagger-ui/**",
+                "/swagger-ui.html"
+        ).permitAll()
+        .requestMatchers(
+                "/auth/login",
+                "/auth/refresh-token",
+                "/auth/verify-email",
+                "/auth/resend-verification",
+                "/auth/forgot-password",
+                "/auth/reset-password"
+        ).permitAll()
+        .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
+        .anyRequest().authenticated()
+)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
@@ -117,7 +117,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8080"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
@@ -126,4 +126,6 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
+
 }
