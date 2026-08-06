@@ -8,20 +8,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@OpenAPIDefinition(
-        info = @Info(
-                title = "Friperie Felana API",
-                version = "1.0",
-                description = "Documentation interactive des APIs du système de gestion Friperie Felana"
-        ),
-        security = @SecurityRequirement(name = "bearerAuth")
-)
-@SecurityScheme(
-        name = "bearerAuth",
-        type = SecuritySchemeType.HTTP,
-        scheme = "bearer",
-        bearerFormat = "JWT",
-        description = "Entrez le jeton JWT généré lors de la connexion (ex: Bearer <token>)"
-)
+@OpenAPIDefinition(info = @Info(title = "Friperie Felana API", version = "1.0", description = "Documentation interactive des APIs du système de gestion Friperie Felana"), security = @SecurityRequirement(name = "bearerAuth"))
+@SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "JWT", description = "Entrez le jeton JWT généré lors de la connexion (ex: Bearer <token>)")
 public class OpenApiConfig {
 }

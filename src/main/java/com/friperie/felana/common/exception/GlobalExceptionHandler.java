@@ -1,7 +1,6 @@
 package com.friperie.felana.common.exception;
 
 import com.friperie.felana.auth.exception.TokenRefreshException;
-import com.friperie.felana.catalog.exception.ResourceNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
