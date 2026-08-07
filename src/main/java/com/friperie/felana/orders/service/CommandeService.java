@@ -10,10 +10,14 @@ import com.friperie.felana.orders.domain.LigneCommande;
 import com.friperie.felana.orders.domain.StatutCommande;
 import com.friperie.felana.orders.dto.request.CommandeCreateRequest;
 import com.friperie.felana.orders.dto.request.LigneCommandeRequest;
+import com.friperie.felana.orders.dto.request.OrderHistoryFilterRequest;
 import com.friperie.felana.orders.repository.CommandeRepository;
+import com.friperie.felana.orders.repository.CommandeSpecifications;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,10 +54,13 @@ public class CommandeService {
      * décrémente le stock, calcule le total, génère une référence lisible.
      *
      * @Transactional est CRITIQUE ici : si le décrément de stock d'une ligne
-     * échoue (stock insuffisant), TOUT doit être annulé - y compris les
-     * décréments déjà faits sur les lignes précédentes de la même commande.
-     * Sans cette annotation, on risquerait un stock incohérent en cas
-     * d'erreur en cours de traitement.
+     *                échoue (stock insuffisant), TOUT doit être annulé - y compris
+     *                les
+     *                décréments déjà faits sur les lignes précédentes de la même
+     *                commande.
+     *                Sans cette annotation, on risquerait un stock incohérent en
+     *                cas
+     *                d'erreur en cours de traitement.
      */
     @Transactional
     public Commande create(CommandeCreateRequest request, User vendeurConnecte) {
@@ -122,4 +129,24 @@ public class CommandeService {
         long count = commandeRepository.countByReferenceStartingWith(prefix) + 1;
         return prefix + String.format("%06d", count);
     }
+
+    /**
+     * Recherche paginée avec filtres. Le paramètre vendeurIdForce permet au
+     * controller d'imposer le filtre vendeur pour un VENDEUR (il ne voit que
+     * SES ventes), en écrasant toute valeur qu'il aurait pu envoyer dans la
+     * query string pour tenter de voir les ventes d'un collègue.
+     */
+    public Page<Commande> search(OrderHistoryFilterRequest filter, Long vendeurIdForce, Pageable pageable) {
+        Long vendeurEffectif = vendeurIdForce != null ? vendeurIdForce : filter.vendeurId();
+
+        Specification<Commande> spec = Specification
+                .where(CommandeSpecifications.dateApres(filter.dateDebut()))
+                .and(CommandeSpecifications.dateAvant(filter.dateFin()))
+                .and(CommandeSpecifications.hasStatut(filter.statut()))
+                .and(CommandeSpecifications.hasClient(filter.clientId()))
+                .and(CommandeSpecifications.hasVendeur(vendeurEffectif));
+
+        return commandeRepository.findAll(spec, pageable);
+    }
+
 }
