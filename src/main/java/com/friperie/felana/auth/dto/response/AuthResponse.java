@@ -9,10 +9,12 @@ package com.friperie.felana.auth.dto.response;
 public record AuthResponse(
         String accessToken,
         String refreshToken,
+        String email,
+        String username,
         String role,
         String tokenType
 ) {
-    public static AuthResponse of(String accessToken, String refreshToken, String role) {
-        return new AuthResponse(accessToken, refreshToken, role, "Bearer");
+    public static AuthResponse of(String accessToken, String refreshToken, String email, String username, String role) {
+        return new AuthResponse(accessToken, refreshToken, email, username, role, "Bearer");
     }
 }

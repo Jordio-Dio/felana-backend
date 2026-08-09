@@ -6,7 +6,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.time.Instant;
 
-public class CommandeSpecifications {
+public class CommandeSpecifications {   
 
     private CommandeSpecifications() {
     }

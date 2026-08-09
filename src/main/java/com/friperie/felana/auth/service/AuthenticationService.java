@@ -58,7 +58,7 @@ public class AuthenticationService {
         String accessToken = jwtService.generateAccessToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
-        return AuthResponse.of(accessToken, refreshToken.getToken(), user.getRole().name());
+        return AuthResponse.of(accessToken, refreshToken.getToken(), user.getEmail(),user.getUsername(), user.getRole().name());
     }
 
     /**
@@ -75,7 +75,7 @@ public class AuthenticationService {
         RefreshToken newRefreshToken = refreshTokenService.rotate(currentToken);
         String newAccessToken = jwtService.generateAccessToken(user);
 
-        return AuthResponse.of(newAccessToken, newRefreshToken.getToken(), user.getRole().name());
+        return AuthResponse.of(newAccessToken, newRefreshToken.getToken(),user.getEmail(), user.getUsername(), user.getRole().name());
     }
 
     /**
