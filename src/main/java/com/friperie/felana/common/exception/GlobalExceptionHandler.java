@@ -9,6 +9,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import com.friperie.felana.auth.exception.SelfActionForbiddenException;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -71,5 +72,11 @@ public class GlobalExceptionHandler {
         body.put("status", status.value());
         body.put("error", message);
         return ResponseEntity.status(status).body(body);
+    }
+
+    // Ajouter cette méthode dans la classe, avec les autres @ExceptionHandler :
+    @ExceptionHandler(SelfActionForbiddenException.class)
+    public ResponseEntity<Object> handleSelfAction(SelfActionForbiddenException ex) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 }
