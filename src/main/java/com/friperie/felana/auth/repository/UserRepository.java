@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
+import java.util.List;
+
 
 /**
  * Accès aux données pour User.
@@ -33,9 +35,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * Recherche un utilisateur par son nom d'utilisateur.
      * Utilisé pour la validation lors de l'inscription (register).
      */
-    Optional<User> findByUsername(String username);
+    Optional<User> findByName(String name);
 
-    boolean existsByUsername(String username);
+    boolean existsByName(String name);
 
     Page<User> findByRole(Role role, Pageable pageable);
 }

@@ -9,9 +9,9 @@ import jakarta.validation.constraints.Size;
  * Le rôle GERANT est exclu pour des raisons de sécurité.
  */
 public record RegisterVendeurRequest(
-        @NotBlank(message = "Le nom d'utilisateur est obligatoire")
-        @Size(min = 3, max = 50, message = "Le nom d'utilisateur doit contenir entre 3 et 50 caractères")
-        String username,
+        @NotBlank(message = "Le nom est obligatoire")
+        @Size(min = 3, max = 50, message = "Le nom doit contenir entre 3 et 50 caractères")
+        String name,
 
         @NotBlank(message = "L'adresse e-mail est obligatoire")
         @Email(message = "Format de l'adresse e-mail invalide")

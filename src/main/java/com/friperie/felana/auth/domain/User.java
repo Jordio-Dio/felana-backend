@@ -34,7 +34,7 @@ public class User implements UserDetails {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String username;
+    private String name;
 
     /** On utilise le nom d'utilisateur (ou l'email) comme identifiant de connexion. */
     @Column(nullable = false, unique = true)

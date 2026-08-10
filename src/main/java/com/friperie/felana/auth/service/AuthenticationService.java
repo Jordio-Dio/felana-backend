@@ -50,7 +50,7 @@ public class AuthenticationService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-        // Si on arrive ici, l'authentification a réussi (sinon une exception a été
+        // Si on arrive ici, l'authentification a réussi (sinon une exception a été 
         // levée avant).
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalStateException("Utilisateur authentifié introuvable."));
@@ -58,7 +58,7 @@ public class AuthenticationService {
         String accessToken = jwtService.generateAccessToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
-        return AuthResponse.of(accessToken, refreshToken.getToken(), user.getEmail(),user.getUsername(), user.getRole().name());
+        return AuthResponse.of(user.getId(),accessToken, refreshToken.getToken(), user.getEmail(),user.getUsername(), user.getRole().name());
     }
 
     /**
@@ -75,7 +75,7 @@ public class AuthenticationService {
         RefreshToken newRefreshToken = refreshTokenService.rotate(currentToken);
         String newAccessToken = jwtService.generateAccessToken(user);
 
-        return AuthResponse.of(newAccessToken, newRefreshToken.getToken(),user.getEmail(), user.getUsername(), user.getRole().name());
+        return AuthResponse.of(user.getId(), newAccessToken, newRefreshToken.getToken(),user.getEmail(), user.getUsername(), user.getRole().name());
     }
 
     /**
@@ -90,7 +90,7 @@ public class AuthenticationService {
      */
     @Transactional
     public void registerVendeur(RegisterVendeurRequest request) {
-        if (userRepository.existsByUsername(request.username())) {
+        if (userRepository.existsByName(request.name())) {
             throw new DataIntegrityViolationException(
                     "Un compte existe déjà avec ce nom d'utilisateur.");
         }
@@ -101,7 +101,7 @@ public class AuthenticationService {
         }
 
         User vendeur = User.builder()
-                .username(request.username())
+                .name(request.name())
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .role(Role.VENDEUR) // <-- forcé côté serveur, jamais lu depuis la requête

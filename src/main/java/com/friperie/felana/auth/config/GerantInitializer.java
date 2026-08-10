@@ -33,8 +33,8 @@ public class GerantInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
  
-    @Value("${app.bootstrap.gerant.username:}")
-    private String defaultUsername;
+    @Value("${app.bootstrap.gerant.name:}")
+    private String defaultName;
  
     @Value("${app.bootstrap.gerant.password:}")
     private String defaultPassword;
@@ -46,7 +46,7 @@ public class GerantInitializer implements CommandLineRunner {
     public void run(String... args) {
         // Si un GERANT existe déjà quelque part, on ne fait rien.
         if (userRepository.existsByEmail(defaultEmail)) {
-            log.info("Compte GERANT '{}' déjà présent, aucune action au démarrage.", defaultUsername);
+            log.info("Compte GERANT '{}' déjà présent, aucune action au démarrage.", defaultName);
             return;
         }
  
@@ -59,7 +59,7 @@ public class GerantInitializer implements CommandLineRunner {
         }
  
         User gerant = User.builder()
-                .username(defaultUsername)
+                .name(defaultName)
                 .email(defaultEmail)
                 .password(passwordEncoder.encode(defaultPassword))
                 .role(Role.GERANT)

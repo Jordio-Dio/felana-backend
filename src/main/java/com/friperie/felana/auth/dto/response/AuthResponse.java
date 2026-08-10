@@ -1,5 +1,7 @@
 package com.friperie.felana.auth.dto.response;
 
+import java.util.UUID;
+
 /**
  * Réponse renvoyée après un login ou un refresh réussi.
  * On renvoie aussi le rôle : pratique pour que le frontend adapte
@@ -7,14 +9,14 @@ package com.friperie.felana.auth.dto.response;
  * supplémentaire.
  */
 public record AuthResponse(
+        Long id, // Ajout de l'ID
         String accessToken,
         String refreshToken,
         String email,
-        String username,
+        String name,
         String role,
-        String tokenType
-) {
-    public static AuthResponse of(String accessToken, String refreshToken, String email, String username, String role) {
-        return new AuthResponse(accessToken, refreshToken, email, username, role, "Bearer");
+        String tokenType) {
+    public static AuthResponse of(Long id, String accessToken, String refreshToken, String email, String name, String role) {
+        return new AuthResponse(id, accessToken, refreshToken, email, name, role, "Bearer");
     }
 }

@@ -11,7 +11,7 @@ import java.time.Instant;
  */
 public record UserResponse(
         Long id,
-        String username,
+        String name,
         String email,
         Role role,
         boolean enabled,
@@ -21,7 +21,7 @@ public record UserResponse(
     public static UserResponse from(User user) {
         return new UserResponse(
                 user.getId(),
-                user.getUsername(),
+                user.getName(),
                 user.getEmail(),
                 user.getRole(),
                 user.isEnabled(),
