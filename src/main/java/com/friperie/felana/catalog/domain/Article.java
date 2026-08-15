@@ -67,6 +67,15 @@ public class Article {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal coutAchat;
 
+    /**
+     * Pourcentage de bénéfice souhaité pour cet article (ex: 0.50 = 50%).
+     * Optionnel : la gérante a confirmé que ce taux varie selon l'article,
+     * pas de valeur fixe globale. Sert uniquement à calculer une suggestion
+     * de prix de vente - prixVente reste toujours modifiable manuellement.
+     */
+    @Column(precision = 5, scale = 4)
+    private BigDecimal pourcentageMarge;
+
     @Column(nullable = false)
     @Builder.Default
     private Integer quantiteStock = 0;
@@ -115,5 +124,18 @@ public class Article {
     @Transient
     public boolean isStockBas() {
         return quantiteStock <= seuilAlerte;
+    }
+
+    /**
+     * Prix de vente suggéré = coutAchat × (1 + pourcentageMarge).
+     * Retourne null si aucun pourcentage n'est défini - dans ce cas, le
+     * frontend n'affiche simplement pas de suggestion.
+     */
+    @Transient
+    public BigDecimal getPrixVenteSuggere() {
+        if (pourcentageMarge == null) {
+            return null;
+        }
+        return coutAchat.multiply(BigDecimal.ONE.add(pourcentageMarge));
     }
 }

@@ -62,6 +62,7 @@ public class ArticleService {
                 .coutAccessoire(request.coutAccessoire())
                 .coutMainOeuvre(request.coutMainOeuvre())
                 .coutAchat(calculerCoutAchat(request.coutMatiere(), request.coutAccessoire(), request.coutMainOeuvre()))
+                .pourcentageMarge(request.pourcentageMarge())
                 .quantiteStock(request.quantiteStock())
                 .seuilAlerte(request.seuilAlerte() != null ? request.seuilAlerte() : 3)
                 .imageUrl(request.imageUrl())
@@ -86,6 +87,7 @@ public class ArticleService {
         article.setCoutAchat(
                 calculerCoutAchat(request.coutMatiere(), request.coutAccessoire(), request.coutMainOeuvre()));
         article.setQuantiteStock(request.quantiteStock());
+        article.setPourcentageMarge(request.pourcentageMarge());
         if (request.seuilAlerte() != null) {
             article.setSeuilAlerte(request.seuilAlerte());
         }

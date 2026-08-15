@@ -12,37 +12,27 @@ import java.math.BigDecimal;
  * réduire - il est volontairement séparé de Create pour ça.
  */
 public record ArticleUpdateRequest(
-        @NotBlank(message = "Le nom est obligatoire")
-        @Size(max = 150)
-        String nom,
+                @NotBlank(message = "Le nom est obligatoire") @Size(max = 150) String nom,
 
-        @Size(max = 2000)
-        String description,
+                @Size(max = 2000) String description,
 
-        @NotNull @DecimalMin(value = "0.0", inclusive = true)
-        BigDecimal prixVente,
+                @NotNull @DecimalMin(value = "0.0", inclusive = true) BigDecimal prixVente,
 
-        @NotNull @DecimalMin(value = "0.0", inclusive = true)
-        BigDecimal coutMatiere,
+                @NotNull @DecimalMin(value = "0.0", inclusive = true) BigDecimal coutMatiere,
 
-        @NotNull @DecimalMin(value = "0.0", inclusive = true)
-        BigDecimal coutAccessoire,
+                @NotNull @DecimalMin(value = "0.0", inclusive = true) BigDecimal coutAccessoire,
 
-        @NotNull @DecimalMin(value = "0.0", inclusive = true)
-        BigDecimal coutMainOeuvre,
+                @NotNull @DecimalMin(value = "0.0", inclusive = true) BigDecimal coutMainOeuvre,
 
+                @DecimalMin(value = "0.0", inclusive = true, message = "Le pourcentage de marge doit être positif") BigDecimal pourcentageMarge,
 
-        @NotNull @Min(0)
-        Integer quantiteStock,
+                @NotNull @Min(0) Integer quantiteStock,
 
-        @Min(0)
-        Integer seuilAlerte,
+                @Min(0) Integer seuilAlerte,
 
-        String imageUrl,
+                String imageUrl,
 
-        Boolean actif,
+                Boolean actif,
 
-        @NotNull(message = "La catégorie est obligatoire")
-        Long categorieId
-) {
+                @NotNull(message = "La catégorie est obligatoire") Long categorieId) {
 }
