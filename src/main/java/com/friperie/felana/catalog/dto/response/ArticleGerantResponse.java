@@ -14,6 +14,9 @@ public record ArticleGerantResponse(
         String nom,
         String description,
         BigDecimal prixVente,
+        BigDecimal coutMatiere,
+        BigDecimal coutAccessoire,
+        BigDecimal coutMainOeuvre,
         BigDecimal coutAchat,
         BigDecimal marge,
         Integer quantiteStock,
@@ -21,8 +24,7 @@ public record ArticleGerantResponse(
         boolean stockBas,
         String imageUrl,
         boolean actif,
-        CategorieResponse categorie
-) {
+        CategorieResponse categorie) {
     public static ArticleGerantResponse from(Article article) {
         return new ArticleGerantResponse(
                 article.getId(),
@@ -30,6 +32,9 @@ public record ArticleGerantResponse(
                 article.getNom(),
                 article.getDescription(),
                 article.getPrixVente(),
+                article.getCoutMatiere(),
+                article.getCoutAccessoire(),
+                article.getCoutMainOeuvre(),
                 article.getCoutAchat(),
                 article.getMarge(),
                 article.getQuantiteStock(),
@@ -37,7 +42,6 @@ public record ArticleGerantResponse(
                 article.isStockBas(),
                 article.getImageUrl(),
                 article.isActif(),
-                CategorieResponse.from(article.getCategorie())
-        );
+                CategorieResponse.from(article.getCategorie()));
     }
 }

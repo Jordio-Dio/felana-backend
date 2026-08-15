@@ -9,6 +9,9 @@ import com.friperie.felana.catalog.repository.ArticleSpecifications;
 import com.friperie.felana.common.exception.ResourceNotFoundException;
 
 import lombok.RequiredArgsConstructor;
+
+import java.math.BigDecimal;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,7 +58,10 @@ public class ArticleService {
                 .nom(request.nom())
                 .description(request.description())
                 .prixVente(request.prixVente())
-                .coutAchat(request.coutAchat())
+                .coutMatiere(request.coutMatiere())
+                .coutAccessoire(request.coutAccessoire())
+                .coutMainOeuvre(request.coutMainOeuvre())
+                .coutAchat(calculerCoutAchat(request.coutMatiere(), request.coutAccessoire(), request.coutMainOeuvre()))
                 .quantiteStock(request.quantiteStock())
                 .seuilAlerte(request.seuilAlerte() != null ? request.seuilAlerte() : 3)
                 .imageUrl(request.imageUrl())
@@ -74,7 +80,11 @@ public class ArticleService {
         article.setNom(request.nom());
         article.setDescription(request.description());
         article.setPrixVente(request.prixVente());
-        article.setCoutAchat(request.coutAchat());
+        article.setCoutMatiere(request.coutMatiere());
+        article.setCoutAccessoire(request.coutAccessoire());
+        article.setCoutMainOeuvre(request.coutMainOeuvre());
+        article.setCoutAchat(
+                calculerCoutAchat(request.coutMatiere(), request.coutAccessoire(), request.coutMainOeuvre()));
         article.setQuantiteStock(request.quantiteStock());
         if (request.seuilAlerte() != null) {
             article.setSeuilAlerte(request.seuilAlerte());
@@ -115,5 +125,14 @@ public class ArticleService {
         Article article = findEntityById(articleId);
         article.setQuantiteStock(article.getQuantiteStock() + quantite);
         articleRepository.save(article);
+    }
+
+    /**
+     * Calcule et applique le coût de revient total à partir des 3 sous-coûts.
+     * Appelée systématiquement à la création ET à la modification, pour que
+     * coutAchat reste TOUJOURS cohérent avec ses composants - jamais désynchronisé.
+     */
+    private BigDecimal calculerCoutAchat(BigDecimal coutMatiere, BigDecimal coutAccessoire, BigDecimal coutMainOeuvre) {
+        return coutMatiere.add(coutAccessoire).add(coutMainOeuvre);
     }
 }

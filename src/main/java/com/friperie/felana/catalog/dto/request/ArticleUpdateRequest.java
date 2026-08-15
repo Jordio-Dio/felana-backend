@@ -23,7 +23,14 @@ public record ArticleUpdateRequest(
         BigDecimal prixVente,
 
         @NotNull @DecimalMin(value = "0.0", inclusive = true)
-        BigDecimal coutAchat,
+        BigDecimal coutMatiere,
+
+        @NotNull @DecimalMin(value = "0.0", inclusive = true)
+        BigDecimal coutAccessoire,
+
+        @NotNull @DecimalMin(value = "0.0", inclusive = true)
+        BigDecimal coutMainOeuvre,
+
 
         @NotNull @Min(0)
         Integer quantiteStock,

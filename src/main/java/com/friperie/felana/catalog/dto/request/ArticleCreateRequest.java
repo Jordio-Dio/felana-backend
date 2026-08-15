@@ -18,9 +18,17 @@ public record ArticleCreateRequest(
         @DecimalMin(value = "0.0", inclusive = true, message = "Le prix de vente doit être positif")
         BigDecimal prixVente,
 
-        @NotNull(message = "Le coût d'achat est obligatoire")
-        @DecimalMin(value = "0.0", inclusive = true, message = "Le coût d'achat doit être positif")
-        BigDecimal coutAchat,
+         @NotNull(message = "Le coût des matières est obligatoire")
+        @DecimalMin(value = "0.0", inclusive = true, message = "Le coût des matières doit être positif")
+        BigDecimal coutMatiere,
+
+        @NotNull(message = "Le coût des accessoires est obligatoire")
+        @DecimalMin(value = "0.0", inclusive = true, message = "Le coût des accessoires doit être positif")
+        BigDecimal coutAccessoire,
+
+        @NotNull(message = "Le coût de main d'œuvre est obligatoire")
+        @DecimalMin(value = "0.0", inclusive = true, message = "Le coût de main d'œuvre doit être positif")
+        BigDecimal coutMainOeuvre,
 
         @NotNull(message = "La quantité en stock est obligatoire")
         @Min(value = 0, message = "La quantité en stock ne peut pas être négative")

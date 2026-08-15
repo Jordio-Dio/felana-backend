@@ -41,7 +41,29 @@ public class Article {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal prixVente;
 
-    /** Coût de revient réel (matières + temps de travail valorisé). Confidentiel GERANT. */
+    /** Coût des matières premières utilisées pour cet article. */
+    @Column(nullable = false, precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal coutMatiere = BigDecimal.ZERO;
+
+    /** Coût des accessoires (boutons, fermetures, etc.). */
+    @Column(nullable = false, precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal coutAccessoire = BigDecimal.ZERO;
+
+    /**
+     * Coût de la main d'œuvre, estimé directement en montant par la gérante
+     * (pas de taux horaire fixe - elle a confirmé l'estimer au cas par cas).
+     */
+    @Column(nullable = false, precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal coutMainOeuvre = BigDecimal.ZERO;
+
+    /**
+     * Coût de revient total, TOUJOURS dérivé des 3 champs ci-dessus.
+     * Recalculé automatiquement à chaque création/modification (voir
+     * ArticleService) - jamais saisi directement, pour garantir la cohérence.
+     */
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal coutAchat;
 
@@ -49,7 +71,10 @@ public class Article {
     @Builder.Default
     private Integer quantiteStock = 0;
 
-    /** En dessous de ce seuil, l'article apparaît dans les alertes de stock bas (GERANT). */
+    /**
+     * En dessous de ce seuil, l'article apparaît dans les alertes de stock bas
+     * (GERANT).
+     */
     @Column(nullable = false)
     @Builder.Default
     private Integer seuilAlerte = 3;
