@@ -14,7 +14,7 @@ public record CommandeResponse(
         StatutCommande statut,
         ClientResponse client,
         String vendeurNom,
-        String remise,
+        BigDecimal remise,
         BigDecimal totalAchat,
         List<LigneCommandeResponse> lignes
 ) {
@@ -26,7 +26,7 @@ public record CommandeResponse(
                 commande.getStatut(),
                 ClientResponse.from(commande.getClient()),
                 commande.getVendeur().getName(),
-                commande.getRemise().toString(),
+                commande.getRemise(),
                 commande.getTotalAchat(),
                 commande.getLignes().stream().map(LigneCommandeResponse::from).toList()
         );

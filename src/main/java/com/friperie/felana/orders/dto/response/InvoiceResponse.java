@@ -29,6 +29,7 @@ public record InvoiceResponse(
         List<InvoiceLigneResponse> lignes,
 
         BigDecimal sousTotal,
+        BigDecimal remise,
         BigDecimal tauxTaxe,
         BigDecimal montantTaxe,
         BigDecimal total,
