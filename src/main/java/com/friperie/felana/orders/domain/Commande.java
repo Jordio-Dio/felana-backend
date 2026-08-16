@@ -22,7 +22,10 @@ public class Commande {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Référence lisible pour le client/reçu, ex: "CMD-2026-000042". Générée en service. */
+    /**
+     * Référence lisible pour le client/reçu, ex: "CMD-2026-000042". Générée en
+     * service.
+     */
     @Column(nullable = false, unique = true)
     private String reference;
 
@@ -47,6 +50,16 @@ public class Commande {
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAchat;
+
+    /**
+     * Remise ponctuelle appliquée à cette commande, en montant fixe (pas en
+     * pourcentage - plus simple et sans ambiguïté pour la gérante). Optionnelle,
+     * saisie manuellement à la création. Toujours positive ou nulle - jamais
+     * négative (une remise ne peut pas AUGMENTER le total).
+     */
+    @Column(nullable = false, precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal remise = BigDecimal.ZERO;
 
     /**
      * cascade = ALL : sauvegarder/supprimer une Commande sauvegarde/supprime

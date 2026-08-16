@@ -95,8 +95,19 @@ public class CommandeService {
             total = total.add(ligne.getSousTotal());
         }
 
+        BigDecimal remiseAppliquee = request.remise() != null ? request.remise() : BigDecimal.ZERO;
+
+        // Garde-fou : la remise ne peut jamais dépasser le total, sinon le total
+        // deviendrait négatif, ce qui n'a aucun sens commercial.
+        if (remiseAppliquee.compareTo(total) > 0) {
+            throw new IllegalArgumentException(
+                    "La remise (" + remiseAppliquee + ") ne peut pas dépasser le total de la commande (" + total
+                            + ").");
+        }
+
         commande.setLignes(lignes);
-        commande.setTotalAchat(total);
+        commande.setRemise(remiseAppliquee);
+        commande.setTotalAchat(total.subtract(remiseAppliquee));
 
         return commandeRepository.save(commande);
     }
