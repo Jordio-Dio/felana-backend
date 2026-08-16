@@ -50,7 +50,7 @@ public class InvoiceService {
                                 commande.getVendeur().getName(),
                                 commande.getLignes().stream().map(InvoiceLigneResponse::from).toList(),
                                 sousTotalLignes,
-                                commande.getRemise()
+                                commande.getRemise(),
                                 tauxTaxe,
                                 montantTaxe,
                                 total,
