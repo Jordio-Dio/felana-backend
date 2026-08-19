@@ -75,6 +75,7 @@ public class SecurityConfig {
                                 "/auth/forgot-password",
                                 "/auth/reset-password")
                         .permitAll()
+                        .requestMatchers("/v1/public/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/clients/**", "/commandes/**").authenticated()
                         .anyRequest().authenticated())

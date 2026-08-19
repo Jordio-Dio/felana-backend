@@ -43,9 +43,13 @@ public class Commande {
     /**
      * Le vendeur qui a enregistré la vente (traçabilité). Utile pour les
      * statistiques de vente par vendeur plus tard.
+     * Mais null pour une commande passée en ligne par un client(e) anonyme via le
+     * module shop
+     * - il n'y pas de vendeur associé(ou impliqué) à la commande,
+     * c'est le client qui l'a passée lui-même.
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "vendeur_id", nullable = false)
+    @JoinColumn(name = "vendeur_id", nullable = true)
     private User vendeur;
 
     @Column(nullable = false, precision = 10, scale = 2)
@@ -61,6 +65,12 @@ public class Commande {
     @Builder.Default
     private BigDecimal remise = BigDecimal.ZERO;
 
+    /**
+     * Mode de paiment choisi pour les commandes en ligne (guest checkout)
+     * Null pour les ventes internes classiques
+     */
+    private String modePaiement;
+    
     /**
      * cascade = ALL : sauvegarder/supprimer une Commande sauvegarde/supprime
      * ses lignes automatiquement. orphanRemoval = true : si une ligne est

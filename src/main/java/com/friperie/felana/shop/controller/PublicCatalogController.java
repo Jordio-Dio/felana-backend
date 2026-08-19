@@ -1,0 +1,49 @@
+package com.friperie.felana.shop.controller;
+
+import com.friperie.felana.shop.dto.ArticlePublicDTO;
+import com.friperie.felana.shop.dto.request.PublicOrderRequest;
+import com.friperie.felana.shop.dto.response.PublicOrderResponse;
+import com.friperie.felana.shop.service.PublicShopService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * Endpoints PUBLICS, sans authentification. Toute la sécurité repose ici
+ * sur la validation stricte des DTOs (jamais de coûts/marges exposés) et
+ * sur PublicShopService, qui ne délègue qu'aux méthodes déjà existantes
+ * d'ArticleService (aucune logique dupliquée).
+ */
+@RestController
+@RequestMapping("/v1/public")
+@RequiredArgsConstructor
+@Tag(name = "Boutique en ligne", description = "Catalogue public et commandes anonymes (guest checkout)")
+public class PublicCatalogController {
+
+    private final PublicShopService publicShopService;
+
+    @Operation(summary = "Liste paginée des articles actifs du catalogue public")
+    @GetMapping("/articles")
+    public ResponseEntity<Page<ArticlePublicDTO>> findArticles(Pageable pageable) {
+        return ResponseEntity.ok(publicShopService.findArticles(pageable));
+    }
+
+    @Operation(summary = "Détail public d'un article")
+    @GetMapping("/articles/{id}")
+    public ResponseEntity<ArticlePublicDTO> findArticleById(@PathVariable Long id) {
+        return ResponseEntity.ok(publicShopService.findArticleById(id));
+    }
+
+    @Operation(summary = "Créer une commande anonyme (guest checkout)")
+    @PostMapping("/orders")
+    public ResponseEntity<PublicOrderResponse> createOrder(@Valid @RequestBody PublicOrderRequest request) {
+        PublicOrderResponse response = publicShopService.createOrder(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+}
