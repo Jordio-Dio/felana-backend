@@ -23,9 +23,10 @@ import org.springframework.web.bind.annotation.*;
 // Ajoudes imports pour les recus :
 import com.friperie.felana.orders.dto.request.OrderHistoryFilterRequest;
 import com.friperie.felana.orders.dto.response.InvoiceResponse;
-import com.friperie.felana.orders.service.InvoiceService;
+import com.friperie.felana.orders.dto.response.NotificationCountResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+
 
 @RestController
 @RequestMapping("/commandes")
@@ -37,6 +38,7 @@ public class CommandeController {
     // Ajouter le champ (via constructeur, @RequiredArgsConstructor le gère
     // automatiquement) :
     private final InvoiceService invoiceService;
+
 
     @PreAuthorize("hasAnyRole('GERANT','VENDEUR')")
     @Operation(summary = "Liste paginée de toutes les commandes")
@@ -129,4 +131,12 @@ public class CommandeController {
 
         return ResponseEntity.ok(result);
     }
+
+    @PreAuthorize("hasAnyRole('GERANT','VENDEUR')")
+    @Operation
+    @GetMapping("/notifications")
+    public ResponseEntity<NotificationCountResponse> getNotifications(@RequestParam String param) {
+        return ResponseEntity.ok(new NotificationCountResponse(commandeService.countAttenteValidation()));
+    }
+    
 }

@@ -5,6 +5,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Un article du catalogue (vêtement, accessoire artisanal...).
@@ -88,7 +90,18 @@ public class Article {
     @Builder.Default
     private Integer seuilAlerte = 3;
 
-    private String imageUrl;
+    /**
+     * Plusieurs photos par article. L'ordre de la liste détermine l'ordre
+     * d'affichage - la première image sert de photo de couverture. Stockées
+     * comme URLs Cloudinary (upload géré côté frontend, le backend ne
+     * reçoit et ne persiste que les URLs résultantes).
+     */
+    @ElementCollection
+    @CollectionTable(name = "article_images", joinColumns = @JoinColumn(name = "article_id"))
+    @OrderColumn(name = "position")
+    @Column(name = "url", nullable = false)
+    @Builder.Default
+    private List<String> imageUrls = new ArrayList<>();
 
     @Column(nullable = false)
     @Builder.Default
@@ -103,6 +116,16 @@ public class Article {
 
     @Column(nullable = false)
     private Instant updatedAt;
+
+    /**
+     * Contrôle la visibilité sur la vitrine PUBLIQUE, indépendamment de
+     * "actif" (qui contrôle la visibilité interne GERANT/VENDEUR). Un article
+     * peut être actif en interne mais pas encore publié publiquement (ex: en
+     * cours de préparation de fiche), ou l'inverse.
+     */
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean publieVitrine = false;
 
     @PrePersist
     protected void onCreate() {

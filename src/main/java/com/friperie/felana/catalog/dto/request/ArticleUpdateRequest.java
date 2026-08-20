@@ -3,6 +3,7 @@ package com.friperie.felana.catalog.dto.request;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Identique à ArticleCreateRequest dans cette version : on autorise la
@@ -30,7 +31,9 @@ public record ArticleUpdateRequest(
 
                 @Min(0) Integer seuilAlerte,
 
-                String imageUrl,
+                List<String> imageUrls,
+
+                Boolean publieVitrine,
 
                 Boolean actif,
 

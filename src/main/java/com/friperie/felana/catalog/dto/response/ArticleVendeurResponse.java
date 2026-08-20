@@ -3,6 +3,7 @@ package com.friperie.felana.catalog.dto.response;
 import com.friperie.felana.catalog.domain.Article;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Vue restreinte pour le VENDEUR : ni coutAchat, ni marge, ni seuilAlerte
@@ -17,7 +18,7 @@ public record ArticleVendeurResponse(
         String description,
         BigDecimal prixVente,
         Integer quantiteStock,
-        String imageUrl,
+        List<String> imageUrls,
         boolean actif,
         CategorieResponse categorie
 ) {
@@ -29,7 +30,7 @@ public record ArticleVendeurResponse(
                 article.getDescription(),
                 article.getPrixVente(),
                 article.getQuantiteStock(),
-                article.getImageUrl(),
+                article.getImageUrls(   ),
                 article.isActif(),
                 CategorieResponse.from(article.getCategorie())
         );

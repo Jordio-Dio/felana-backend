@@ -15,4 +15,6 @@ public interface CommandeRepository extends JpaRepository<Commande, Long> , JpaS
     Page<Commande> findByStatut(StatutCommande statut, Pageable pageable);
 
     long countByReferenceStartingWith(String prefix);
+
+    long countByStatut(StatutCommande statut);
 }

@@ -15,6 +15,7 @@ import com.friperie.felana.shop.dto.request.PublicOrderRequest;
 import com.friperie.felana.shop.dto.response.PublicOrderResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,13 +34,19 @@ public class PublicShopService {
     private final CommandeRepository commandeRepository;
 
     public Page<ArticlePublicDTO> findArticles(Pageable pageable) {
-        // Un visiteur ne voit que les articles actifs, jamais ceux désactivés.
-        return articleService.search(null, true, null, pageable).map(ArticlePublicDTO::from);
+        // Un visiteur ne voit que les articles actifs ET explicitement publiés sur la
+        // vitrine.
+        Page<Article> page = articleService.search(null, true, null, pageable);
+        List<ArticlePublicDTO> filtres = page.getContent().stream()
+                .filter(Article::isPublieVitrine)
+                .map(ArticlePublicDTO::from)
+                .toList();
+        return new PageImpl<>(filtres, pageable, filtres.size());
     }
 
     public ArticlePublicDTO findArticleById(Long id) {
         Article article = articleService.findEntityById(id);
-        if (!article.isActif()) {
+        if (!article.isActif() || !article.isPublieVitrine()) {
             throw new ResourceNotFoundException("Article introuvable, id=" + id);
         }
         return ArticlePublicDTO.from(article);
@@ -51,8 +58,9 @@ public class PublicShopService {
      * décrémente, calcule le total, sans aucun vendeur associé.
      *
      * @Transactional garantit qu'en cas de rupture de stock sur une ligne,
-     * TOUT est annulé (y compris les décréments déjà faits sur les lignes
-     * précédentes) - pas de commande partiellement enregistrée.
+     *                TOUT est annulé (y compris les décréments déjà faits sur les
+     *                lignes
+     *                précédentes) - pas de commande partiellement enregistrée.
      */
     @Transactional
     public PublicOrderResponse createOrder(PublicOrderRequest request) {
@@ -101,8 +109,7 @@ public class PublicShopService {
                 saved.getReference(),
                 saved.getTotalAchat(),
                 request.modePaiement().name(),
-                buildInstructions(request.modePaiement())
-        );
+                buildInstructions(request.modePaiement()));
     }
 
     private Client creerNouveauClient(PublicOrderRequest request) {
@@ -122,8 +129,10 @@ public class PublicShopService {
 
     private String buildInstructions(com.friperie.felana.shop.domain.ModePaiement mode) {
         return switch (mode) {
-            case MVOLA_MANUEL -> "Effectuez votre transfert Mvola au 034 XX XXX XX, puis attendez la confirmation par téléphone.";
-            case ORANGE_MONEY_MANUEL -> "Effectuez votre transfert Orange Money au 032 XX XXX XX, puis attendez la confirmation par téléphone.";
+            case MVOLA_MANUEL ->
+                "Effectuez votre transfert Mvola au 034 XX XXX XX, puis attendez la confirmation par téléphone.";
+            case ORANGE_MONEY_MANUEL ->
+                "Effectuez votre transfert Orange Money au 032 XX XXX XX, puis attendez la confirmation par téléphone.";
             case ESPECES -> "Le paiement en espèces se fera à la livraison ou au retrait.";
         };
     }

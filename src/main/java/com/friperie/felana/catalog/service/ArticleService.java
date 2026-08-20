@@ -11,6 +11,7 @@ import com.friperie.felana.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -65,7 +66,8 @@ public class ArticleService {
                 .pourcentageMarge(request.pourcentageMarge())
                 .quantiteStock(request.quantiteStock())
                 .seuilAlerte(request.seuilAlerte() != null ? request.seuilAlerte() : 3)
-                .imageUrl(request.imageUrl())
+                .imageUrls(request.imageUrls() != null ? request.imageUrls() : new ArrayList<>())
+                .publieVitrine(request.publieVitrine())
                 .actif(true)
                 .categorie(categorie)
                 .build();
@@ -91,7 +93,8 @@ public class ArticleService {
         if (request.seuilAlerte() != null) {
             article.setSeuilAlerte(request.seuilAlerte());
         }
-        article.setImageUrl(request.imageUrl());
+        article.setImageUrls(request.imageUrls() != null ? request.imageUrls() : new ArrayList<>());
+        article.setPublieVitrine(request.publieVitrine());
         if (request.actif() != null) {
             article.setActif(request.actif());
         }

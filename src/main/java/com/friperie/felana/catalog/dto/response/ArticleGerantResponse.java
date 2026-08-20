@@ -3,6 +3,7 @@ package com.friperie.felana.catalog.dto.response;
 import com.friperie.felana.catalog.domain.Article;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Vue complète réservée au GERANT : inclut le coût d'achat, la marge
@@ -24,7 +25,8 @@ public record ArticleGerantResponse(
         Integer quantiteStock,
         Integer seuilAlerte,
         boolean stockBas,
-        String imageUrl,
+        List<String> imageUrls,
+        boolean publieVitrine,
         boolean actif,
         CategorieResponse categorie) {
     public static ArticleGerantResponse from(Article article) {
@@ -44,7 +46,8 @@ public record ArticleGerantResponse(
                 article.getQuantiteStock(),
                 article.getSeuilAlerte(),
                 article.isStockBas(),
-                article.getImageUrl(),
+                article.getImageUrls(),
+                article.isPublieVitrine(),
                 article.isActif(),
                 CategorieResponse.from(article.getCategorie()));
     }

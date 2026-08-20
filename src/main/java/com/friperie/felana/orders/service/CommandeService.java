@@ -160,4 +160,8 @@ public class CommandeService {
         return commandeRepository.findAll(spec, pageable);
     }
 
+    public long countAttenteValidation() {
+        return commandeRepository.countByStatut(StatutCommande.EN_ATTENTE_VALIDATION);
+    }
+
 }

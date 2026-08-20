@@ -1,6 +1,7 @@
 package com.friperie.felana.shop.dto;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import com.friperie.felana.catalog.domain.Article;
 
@@ -15,7 +16,7 @@ public record ArticlePublicDTO(
     String nom,
     String description,
     BigDecimal prixVente,
-    String imageUrl,
+    List<String> imageUrls,
     boolean disponible,
     String categorieNom
 ) {
@@ -26,7 +27,7 @@ public record ArticlePublicDTO(
             article.getNom(),
             article.getDescription(),
             article.getPrixVente(),
-            article.getImageUrl(),
+            article.getImageUrls(),
             article.getQuantiteStock() > 0,
             article.getCategorie().getNom()
         );
