@@ -87,7 +87,7 @@ public class PublicShopService {
                         "L'article '" + article.getNom() + "' n'est plus disponible.");
             }
 
-            articleService.decrementerStock(article.getId(), item.quantite());
+            articleService.verifierDisponibilite(article.getId(), item.quantite());
 
             LigneCommande ligne = LigneCommande.builder()
                     .commande(commande)

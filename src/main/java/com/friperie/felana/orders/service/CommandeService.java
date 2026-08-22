@@ -120,11 +120,20 @@ public class CommandeService {
     @Transactional
     public Commande updateStatut(Long id, StatutCommande nouveauStatut) {
         Commande commande = findEntityById(id);
+        StatutCommande ancienStatut = commande.getStatut();
 
-        boolean devientAnnulee = nouveauStatut == StatutCommande.ANNULEE
-                && commande.getStatut() != StatutCommande.ANNULEE;
+        boolean devientPayee = nouveauStatut == StatutCommande.PAYEE && ancienStatut != StatutCommande.PAYEE;
+        boolean neRestePlusPayee = ancienStatut == StatutCommande.PAYEE && nouveauStatut != StatutCommande.PAYEE;
 
-        if (devientAnnulee) {
+        if (devientPayee) {
+            // Paiement confirmé : c'est SEULEMENT maintenant que le stock est réellement
+            // décrémenté.
+            for (LigneCommande ligne : commande.getLignes()) {
+                articleService.decrementerStock(ligne.getArticle().getId(), ligne.getQuantite());
+            }
+        } else if (neRestePlusPayee) {
+            // Le statut change après avoir été payé (ex: annulation a posteriori) : on
+            // restitue le stock.
             for (LigneCommande ligne : commande.getLignes()) {
                 articleService.restaurerStock(ligne.getArticle().getId(), ligne.getQuantite());
             }
