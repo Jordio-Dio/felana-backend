@@ -82,7 +82,7 @@ public class CommandeService {
 
             // Décrémente le stock immédiatement ; lève une exception si insuffisant,
             // ce qui annule automatiquement toute la transaction (rollback).
-            articleService.decrementerStock(article.getId(), ligneReq.quantite());
+            articleService.verifierDisponibilite(article.getId(), ligneReq.quantite());
 
             LigneCommande ligne = LigneCommande.builder()
                     .commande(commande)

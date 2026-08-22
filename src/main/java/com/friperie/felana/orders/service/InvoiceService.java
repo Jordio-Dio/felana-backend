@@ -47,7 +47,7 @@ public class InvoiceService {
                                 clientNomComplet,
                                 client.getTelephone(),
                                 client.getEmail(),
-                                commande.getVendeur().getName(),
+                                commande.getVendeur() != null ? commande.getVendeur().getName() : "Vente en ligne",
                                 commande.getLignes().stream().map(InvoiceLigneResponse::from).toList(),
                                 sousTotalLignes,
                                 commande.getRemise(),

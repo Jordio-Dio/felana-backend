@@ -25,7 +25,7 @@ public record CommandeResponse(
                 commande.getDateCommande(),
                 commande.getStatut(),
                 ClientResponse.from(commande.getClient()),
-                commande.getVendeur().getName(),
+                commande.getVendeur() != null ? commande.getVendeur().getName() : "Vente en ligne",
                 commande.getRemise(),
                 commande.getTotalAchat(),
                 commande.getLignes().stream().map(LigneCommandeResponse::from).toList()

@@ -140,4 +140,17 @@ public class ArticleService {
     private BigDecimal calculerCoutAchat(BigDecimal coutMatiere, BigDecimal coutAccessoire, BigDecimal coutMainOeuvre) {
         return coutMatiere.add(coutAccessoire).add(coutMainOeuvre);
     }
+
+    /**
+     * Vérifie qu'il y a assez de stock, SANS le modifier. Utilisée à la
+     * création d'une commande : le stock ne doit être réellement décrémenté
+     * qu'au moment où le paiement est confirmé (voir CommandeService).
+     */
+    public void verifierDisponibilite(Long articleId, int quantite) {
+        Article article = findEntityById(articleId);
+        if (article.getQuantiteStock() < quantite) {
+            throw new IllegalArgumentException(
+                    "Stock insuffisant pour l'article  ' " + article.getNom() + "'.");
+        }
+    }
 }
