@@ -62,7 +62,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             username = jwtService.extractUsername(jwt);
+            System.out.println("[JWT-DEBUG] Username extrait : " + username + " pour " + request.getRequestURI());
         } catch (Exception e) {
+            System.out.println(
+                    "[JWT-DEBUG] Échec extraction username : " + e.getClass().getSimpleName() + " - " + e.getMessage());
             // Token malformé, signature invalide, expiré... -> on ne bloque pas ici,
             // on laisse simplement l'utilisateur non authentifié. C'est SecurityConfig
             // qui renverra un 401/403 si la route l'exige.
@@ -74,8 +77,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // déjà authentifié dans le contexte courant (évite un travail redondant).
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+            boolean valide = jwtService.isTokenValid(jwt, userDetails);
+            System.out.println("[JWT-DEBUG] userDetails.username=" + userDetails.getUsername() + " tokenValide="
+                    + valide + " enabled=" + userDetails.isEnabled());
 
-            if (jwtService.isTokenValid(jwt, userDetails)) {
+            if (valide) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null, // pas de credentials nécessaires, on est déjà authentifié via le token
@@ -92,6 +98,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getServletPath();
         return path.startsWith("/v3/api-docs/")
-                || path.startsWith("/swagger-ui/"); 
+                || path.startsWith("/swagger-ui/");
     }
 }

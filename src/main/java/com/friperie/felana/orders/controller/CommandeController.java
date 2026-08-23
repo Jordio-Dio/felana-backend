@@ -134,8 +134,8 @@ public class CommandeController {
 
     @PreAuthorize("hasAnyRole('GERANT','VENDEUR')")
     @Operation
-    @GetMapping("/notifications")
-    public ResponseEntity<NotificationCountResponse> getNotifications(@RequestParam String param) {
+    @GetMapping("/notifications/count")
+    public ResponseEntity<NotificationCountResponse> getNotifications(@RequestParam(required = false) String param) {
         return ResponseEntity.ok(new NotificationCountResponse(commandeService.countAttenteValidation()));
     }
     
