@@ -44,7 +44,10 @@ public class OtpService {
         emailService.sendOtpEmail(user.getEmail(), code, subject);
     }
 
-    /** Vérifie le code fourni ; le marque comme utilisé si valide. Lève une exception sinon. */
+    /**
+     * Vérifie le code fourni ; le marque comme utilisé si valide. Lève une
+     * exception sinon.
+     */
     @Transactional
     public OtpCode verify(User user, OtpPurpose purpose, String code) {
         OtpCode otp = otpCodeRepository
@@ -61,5 +64,38 @@ public class OtpService {
         otp.setUsed(true);
         otpCodeRepository.save(otp);
         return otp;
+    }
+
+    @Transactional
+    public void generateAndSend(String email, OtpPurpose purpose) {
+        String code = String.format("%06d", RANDOM.nextInt(1_000_000));
+
+        OtpCode otp = OtpCode.builder()
+                .emailCible(email)
+                .code(code)
+                .purpose(purpose)
+                .expiryDate(Instant.now().plusSeconds(expirationMinutes * 60))
+                .used(false)
+                .build();
+        otpCodeRepository.save(otp);
+
+        emailService.sendOtpEmail(email, code, "Vérification de votre email Felana");
+    }
+
+    @Transactional
+    public void verify(String email, OtpPurpose purpose, String code) {
+        OtpCode otp = otpCodeRepository
+                .findTopByEmailCibleAndPurposeAndUsedFalseOrderByIdDesc(email, purpose)
+                .orElseThrow(() -> new TokenRefreshException("Aucun code actif pour cet email."));
+
+        if (otp.isExpired()) {
+            throw new TokenRefreshException("Ce code a expiré, veuillez en redemander un.");
+        }
+        if (!otp.getCode().equals(code)) {
+            throw new TokenRefreshException("Code incorrect.");
+        }
+
+        otp.setUsed(true);
+        otpCodeRepository.save(otp);
     }
 }
