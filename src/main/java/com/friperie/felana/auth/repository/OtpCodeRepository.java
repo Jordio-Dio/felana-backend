@@ -9,5 +9,6 @@ import com.friperie.felana.auth.domain.OtpPurpose;
 import com.friperie.felana.auth.domain.User;
 
 public interface OtpCodeRepository extends JpaRepository<OtpCode, Long> {
-    Optional<OtpCode> findTopByUserAndPurposeAndUsedFalseOrderByIdDesc(User user, OtpPurpose purpose);    
+    Optional<OtpCode> findTopByUserAndPurposeAndUsedFalseOrderByIdDesc(User user, OtpPurpose purpose);   
+    Optional<OtpCode> findTopByEmailCibleAndPurposeAndUsedFalseOrderByIdDesc(String emailCible, OtpPurpose purpose); 
 }
