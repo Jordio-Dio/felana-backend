@@ -48,93 +48,98 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final UserDetailsService userDetailsService;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final UserDetailsService userDetailsService;
+        private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+        private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+        private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/v3/api-docs",
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html")
-                        .permitAll()
-                        .requestMatchers(
-                                "/auth/login",
-                                "/auth/refresh-token",
-                                "/auth/verify-email",
-                                "/auth/resend-verification",
-                                "/auth/forgot-password",
-                                "/auth/reset-password")
-                        .permitAll()
-                        .requestMatchers("/v1/public/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/clients/**", "/commandes/**").authenticated()
-                        .anyRequest().authenticated())
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                        .accessDeniedHandler(jwtAccessDeniedHandler)
-                     ) 
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .csrf(csrf -> csrf.disable())
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(
+                                                                "/v3/api-docs",
+                                                                "/v3/api-docs/**",
+                                                                "/swagger-ui/**",
+                                                                "/swagger-ui.html")
+                                                .permitAll()
+                                                .requestMatchers(
+                                                                "/auth/login",
+                                                                "/auth/refresh-token",
+                                                                "/auth/verify-email",
+                                                                "/auth/resend-verification",
+                                                                "/auth/forgot-password",
+                                                                "/auth/reset-password")
+                                                .permitAll()
+                                                .requestMatchers(
+                                                                "/v1/public/**",
+                                                                "/v1/public/client/register",
+                                                                "/v1/public/client/login")
+                                                .permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/clients/**", "/commandes/**")
+                                                .authenticated()
+                                                .anyRequest().authenticated())
+                                .exceptionHandling(exception -> exception
+                                                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                                                .accessDeniedHandler(jwtAccessDeniedHandler))
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .authenticationProvider(authenticationProvider())
+                                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+                return http.build();
+        }
 
-    /**
-     * Le "pont" entre Spring Security et notre UserDetailsService/PasswordEncoder :
-     * il sait comment charger un utilisateur et vérifier son mot de passe.
-     * Utilisé par l'AuthenticationManager lors du login.
-     */
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
-    }
+        /**
+         * Le "pont" entre Spring Security et notre UserDetailsService/PasswordEncoder :
+         * il sait comment charger un utilisateur et vérifier son mot de passe.
+         * Utilisé par l'AuthenticationManager lors du login.
+         */
+        @Bean
+        public AuthenticationProvider authenticationProvider() {
+                DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+                authProvider.setUserDetailsService(userDetailsService);
+                authProvider.setPasswordEncoder(passwordEncoder());
+                return authProvider;
+        }
 
-    /**
-     * Composant utilisé dans AuthenticationService pour déclencher manuellement
-     * l'authentification (vérification username/password) lors du login.
-     */
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
+        /**
+         * Composant utilisé dans AuthenticationService pour déclencher manuellement
+         * l'authentification (vérification username/password) lors du login.
+         */
+        @Bean
+        public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+                return config.getAuthenticationManager();
+        }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        // BCrypt : hachage à sens unique + salage automatique, standard de fait pour
-        // les mots de passe.
-        return new BCryptPasswordEncoder();
-    }
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                // BCrypt : hachage à sens unique + salage automatique, standard de fait pour
+                // les mots de passe.
+                return new BCryptPasswordEncoder();
+        }
 
-    /**
-     * Configuration CORS minimale : à adapter avec le(s) domaine(s) réel(s)
-     * de votre frontend en production (éviter "*" avec des credentials).
-     */
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration
-                .setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8080", "http://localhost:5173", "https://hiba-creations.vercel.app"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        configuration.setAllowCredentials(true);
+        /**
+         * Configuration CORS minimale : à adapter avec le(s) domaine(s) réel(s)
+         * de votre frontend en production (éviter "*" avec des credentials).
+         */
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration configuration = new CorsConfiguration();
+                configuration
+                                .setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8080",
+                                                "http://localhost:5173", "https://hiba-creations.vercel.app"));
+                configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+                configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+                configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
+                return source;
+        }
 
 }

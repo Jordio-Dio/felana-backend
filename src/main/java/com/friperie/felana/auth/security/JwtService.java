@@ -68,7 +68,10 @@ public class JwtService {
                 .compact();
     }
 
-    /** Vérifie que le token appartient bien à cet utilisateur ET qu'il n'est pas expiré. */
+    /**
+     * Vérifie que le token appartient bien à cet utilisateur ET qu'il n'est pas
+     * expiré.
+     */
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
@@ -82,7 +85,10 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    /** Décode et vérifie la signature du token ; lève une exception si invalide/altéré. */
+    /**
+     * Décode et vérifie la signature du token ; lève une exception si
+     * invalide/altéré.
+     */
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSignInKey())
@@ -95,4 +101,26 @@ public class JwtService {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
+
+    @Value("${jwt.client-token-expiration}")
+    private long clientTokenExpiration;
+
+    /**
+     * Génère un token pour un CLIENT (vitrine), avec un claim "type" distinctif
+     * et une durée de vie plus longue (24h) que l'access token staff (15 min),
+     * puisqu'un client n'a pas de mécanisme de refresh token.
+     */
+    public String generateClientToken(UserDetails clientDetails) {
+        return Jwts.builder()
+                .claims(Map.of("type", "CLIENT"))
+                .subject(clientDetails.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + clientTokenExpiration))
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String extractType(String token) {
+    return extractClaim(token, claims -> claims.get("type", String.class));
+}
 }

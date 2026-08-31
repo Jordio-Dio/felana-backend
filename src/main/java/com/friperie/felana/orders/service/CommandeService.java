@@ -173,4 +173,9 @@ public class CommandeService {
         return commandeRepository.countByStatut(StatutCommande.EN_ATTENTE_VALIDATION);
     }
 
+    public Page<Commande> findMesCommandes(Long clientId, Pageable pageable) {
+        Client client = clientService.findEntityById(clientId);
+        return commandeRepository.findByClient(client, pageable);
+    }
+
 }

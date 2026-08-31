@@ -1,11 +1,13 @@
 package com.friperie.felana.orders.dto.response;
 
+import com.friperie.felana.orders.domain.Client;
 import com.friperie.felana.orders.domain.Commande;
 import com.friperie.felana.orders.domain.StatutCommande;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+
 
 public record CommandeResponse(
         Long id,
@@ -31,4 +33,6 @@ public record CommandeResponse(
                 commande.getLignes().stream().map(LigneCommandeResponse::from).toList()
         );
     }
+
+    
 }

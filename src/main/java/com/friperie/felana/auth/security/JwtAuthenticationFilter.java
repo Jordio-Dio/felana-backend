@@ -29,7 +29,7 @@ import java.io.IOException;
  * Authentication : c'est CE qui fait que @PreAuthorize("hasRole('GERANT')")
  * peut ensuite fonctionner plus loin dans la requête.
  *
- * Si aucun header n'est présent, ou s'il est invalide, on laisse simplement
+ * Si aucun header n'est présent, ou s'il est invalide, on laisse  ment
  * passer la requête sans authentifier l'utilisateur : c'est la suite de la
  * chaîne de filtres (SecurityConfig) qui décidera si la route nécessite une
  * authentification ou non.
