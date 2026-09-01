@@ -1,5 +1,8 @@
 package com.friperie.felana.shop.controller;
 
+import com.friperie.felana.orders.domain.Client;
+import com.friperie.felana.orders.dto.response.CommandeResponse;
+import com.friperie.felana.orders.service.CommandeService;
 import com.friperie.felana.shop.dto.ArticlePublicDTO;
 import com.friperie.felana.shop.dto.request.PublicOrderRequest;
 import com.friperie.felana.shop.dto.response.PublicOrderResponse;
@@ -12,6 +15,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -27,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 public class PublicCatalogController {
 
     private final PublicShopService publicShopService;
+    private final CommandeService commandeService;
 
     @Operation(summary = "Liste paginée des articles actifs du catalogue public")
     @GetMapping("/articles")
@@ -42,8 +48,19 @@ public class PublicCatalogController {
 
     @Operation(summary = "Créer une commande anonyme (guest checkout)")
     @PostMapping("/orders")
-    public ResponseEntity<PublicOrderResponse> createOrder(@Valid @RequestBody PublicOrderRequest request) {
-        PublicOrderResponse response = publicShopService.createOrder(request);
+    public ResponseEntity<PublicOrderResponse> createOrder(@Valid @RequestBody PublicOrderRequest request , @AuthenticationPrincipal Client client) {
+        PublicOrderResponse response = publicShopService.createOrder(request, client);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PreAuthorize("hasRole('CLIENT')")
+    @Operation(summary = "Historique des commandes du client connecté")
+    @GetMapping("/mes-commandes")
+    public ResponseEntity<Page<CommandeResponse>> mesCommandes(
+            @AuthenticationPrincipal Client client, Pageable pageable) {
+        Page<CommandeResponse> result = commandeService
+                .findMesCommandes(client.getId(), pageable)
+                .map(CommandeResponse::from);
+        return ResponseEntity.ok(result);
     }
 }

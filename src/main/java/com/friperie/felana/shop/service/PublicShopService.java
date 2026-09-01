@@ -63,14 +63,12 @@ public class PublicShopService {
      *                précédentes) - pas de commande partiellement enregistrée.
      */
     @Transactional
-    public PublicOrderResponse createOrder(PublicOrderRequest request) {
-        Client client = clientRepository.findByTelephone(request.telephone())
-                .orElseGet(() -> creerNouveauClient(request));
+    public PublicOrderResponse createOrder(PublicOrderRequest request, Client clientConnecte) {
 
         Commande commande = Commande.builder()
                 .reference(genererReference())
                 .statut(StatutCommande.EN_ATTENTE_VALIDATION)
-                .client(client)
+                .client(clientConnecte)
                 .vendeur(null) // pas de vendeur pour une commande en ligne
                 .modePaiement(request.modePaiement().name())
                 .totalAchat(BigDecimal.ZERO)
@@ -112,6 +110,7 @@ public class PublicShopService {
                 buildInstructions(request.modePaiement()));
     }
 
+    /* 
     private Client creerNouveauClient(PublicOrderRequest request) {
         Client client = Client.builder()
                 .nom(request.nomClient())
@@ -119,7 +118,7 @@ public class PublicShopService {
                 .adresse(request.adresseLivraison())
                 .build();
         return clientRepository.save(client);
-    }
+    }*/
 
     private String genererReference() {
         String prefix = "SHOP-" + Year.now().getValue() + "-";
