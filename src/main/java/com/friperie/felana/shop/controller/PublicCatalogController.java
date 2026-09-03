@@ -46,9 +46,17 @@ public class PublicCatalogController {
         return ResponseEntity.ok(publicShopService.findArticleById(id));
     }
 
-    @Operation(summary = "Créer une commande anonyme (guest checkout)")
+    @PreAuthorize("hasRole('CLIENT')")
     @PostMapping("/orders")
-    public ResponseEntity<PublicOrderResponse> createOrder(@Valid @RequestBody PublicOrderRequest request , @AuthenticationPrincipal Client client) {
+    public ResponseEntity<PublicOrderResponse> createOrder(@Valid @RequestBody PublicOrderRequest request,
+            @AuthenticationPrincipal Client client) {
+        System.out.println("[ORDER-DEBUG] client=" + client);
+        if (client != null) {
+            System.out.println("[ORDER-DEBUG] client.id=" + client.getId() + " class=" + client.getClass().getName());
+        }
+        if (client == null) {
+            throw new IllegalStateException("Client non authentifié correctement");
+        }
         PublicOrderResponse response = publicShopService.createOrder(request, client);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

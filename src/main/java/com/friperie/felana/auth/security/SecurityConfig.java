@@ -79,6 +79,7 @@ public class SecurityConfig {
                                                                 "/v1/public/client/register",
                                                                 "/v1/public/client/login")
                                                 .permitAll()
+                                                .requestMatchers("/v1/public/orders/", "/v1/public/mes-commandes").authenticated()
                                                 .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/clients/**", "/commandes/**")
                                                 .authenticated()
