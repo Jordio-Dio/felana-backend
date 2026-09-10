@@ -1,12 +1,16 @@
 package com.friperie.felana.shop.service;
 
 import com.friperie.felana.auth.service.OtpService;
+import com.friperie.felana.common.exception.ResourceNotFoundException;
 import com.friperie.felana.auth.domain.OtpPurpose;
+import com.friperie.felana.auth.dto.request.ChangePasswordRequest;
 import com.friperie.felana.orders.domain.Client;
+import com.friperie.felana.orders.dto.response.ClientResponse;
 import com.friperie.felana.orders.repository.ClientRepository;
 import com.friperie.felana.shop.dto.response.ClientAuthResponse;
 import com.friperie.felana.shop.dto.request.ClientLoginRequest;
 import com.friperie.felana.shop.dto.request.ClientRegisterRequest;
+import com.friperie.felana.shop.dto.request.ClientUpdateProfileRequest;
 import com.friperie.felana.auth.security.JwtService;
 import lombok.RequiredArgsConstructor;
 
@@ -71,5 +75,58 @@ public class ClientAuthService {
 
         String token = jwtService.generateClientToken(client);
         return new ClientAuthResponse(client.getId(), token, client.getNom(), client.isEmailVerifie());
+    }
+
+    @Transactional
+    public ClientResponse updateProfile(Long clientId, ClientUpdateProfileRequest request) {
+        Client client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Client introuvable."));
+
+        if (!request.hasEmail() && !request.hasTelephone()) {
+            throw new IllegalArgumentException("Un email ou un numéro de téléphone est obligatoire.");
+        }
+
+        boolean emailChange = request.hasEmail()
+                && (client.getEmail() == null || !client.getEmail().equalsIgnoreCase(request.email()));
+        if (emailChange) {
+            clientRepository.findByEmail(request.email()).ifPresent(existing -> {
+                if (!existing.getId().equals(clientId)) {
+                    throw new IllegalArgumentException("Cet email est déjà utilisé.");
+                }
+            });
+        }
+
+        boolean telephoneChange = request.hasTelephone()
+                && (client.getTelephone() == null || !client.getTelephone().equals(request.telephone()));
+        if (telephoneChange) {
+            clientRepository.findByTelephone(request.telephone()).ifPresent(existing -> {
+                if (!existing.getId().equals(clientId)) {
+                    throw new IllegalArgumentException("Ce numéro de téléphone est déjà utilisé.");
+                }
+            });
+        }
+
+        client.setNom(request.nom());
+        client.setPrenom(request.prenom());
+        client.setEmail(request.hasEmail() ? request.email() : null);
+        client.setTelephone(request.hasTelephone() ? request.telephone() : null);
+        client.setAdresse(request.adresse());
+
+        if (emailChange) {
+            client.setEmailVerifie(false);
+        }
+
+        return ClientResponse.from(clientRepository.save(client));
+    }
+
+    @Transactional
+    public void changePassword(Long clientId, ChangePasswordRequest request) {
+        Client client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Client introuvable."));
+        if (!passwordEncoder.matches(request.currentPassword(), client.getPassword())) {
+            throw new BadCredentialsException("Mot de passe actuel incorrect.");
+        }
+        client.setPassword(passwordEncoder.encode(request.newPassword()));
+        clientRepository.save(client);
     }
 }

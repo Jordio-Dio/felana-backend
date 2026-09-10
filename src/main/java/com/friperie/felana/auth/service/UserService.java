@@ -2,12 +2,18 @@ package com.friperie.felana.auth.service;
 
 import com.friperie.felana.auth.domain.Role;
 import com.friperie.felana.auth.domain.User;
+import com.friperie.felana.auth.dto.request.ChangePasswordRequest;
+import com.friperie.felana.auth.dto.request.UpdateProfileRequest;
 import com.friperie.felana.auth.exception.SelfActionForbiddenException;
 import com.friperie.felana.auth.repository.UserRepository;
 import com.friperie.felana.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public Page<User> findVendeurs(Pageable pageable) {
         return userRepository.findByRole(Role.VENDEUR, pageable);
@@ -49,4 +56,31 @@ public class UserService {
         cible.setEnabled(enabled);
         return userRepository.save(cible);
     }
+
+    @Transactional
+public User updateProfile(Long userId, UpdateProfileRequest request) {
+    User user = findEntityById(userId);
+
+    boolean emailChange = !user.getEmail().equalsIgnoreCase(request.email());
+    if (emailChange && userRepository.existsByEmail(request.email())) {
+        throw new DataIntegrityViolationException("Cet email est déjà utilisé.");
+    }
+
+    user.setName(request.nom());
+    user.setEmail(request.email());
+    if (emailChange) {
+        user.setEmailVerified(false); // à revérifier, comme à l'inscription
+    }
+    return userRepository.save(user);
+}
+
+@Transactional
+public void changePassword(Long userId, ChangePasswordRequest request) {
+    User user = findEntityById(userId);
+    if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+        throw new BadCredentialsException("Mot de passe actuel incorrect.");
+    }
+    user.setPassword(passwordEncoder.encode(request.newPassword()));
+    userRepository.save(user);
+}
 }   
