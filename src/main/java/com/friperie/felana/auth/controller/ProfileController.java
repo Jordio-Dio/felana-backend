@@ -3,8 +3,8 @@ package com.friperie.felana.auth.controller;
 import com.friperie.felana.auth.domain.User;
 import com.friperie.felana.auth.dto.request.ChangePasswordRequest;
 import com.friperie.felana.auth.dto.request.UpdateProfileRequest;
-import com.friperie.felana.auth.dto.response.UserResponse;
-import com.friperie.felana.auth.service.UserService;
+import com.friperie.felana.auth.dto.response.AuthResponse;
+import com.friperie.felana.auth.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -23,28 +23,27 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Mon profil", description = "Gestion du profil du compte staff connecté")
 public class ProfileController {
 
-    private final UserService userService;
+    private final AuthenticationService authenticationService;
 
     @Operation(summary = "Voir mon profil")
     @GetMapping
-    public ResponseEntity<UserResponse> me(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(UserResponse.from(user));
+    public ResponseEntity<com.friperie.felana.auth.dto.response.UserResponse> me(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(com.friperie.felana.auth.dto.response.UserResponse.from(user));
     }
 
     @Operation(summary = "Modifier mon nom/email")
     @PatchMapping
-    public ResponseEntity<UserResponse> updateProfile(
+    public ResponseEntity<AuthResponse> updateProfile(
             @AuthenticationPrincipal User user,
             @Valid @RequestBody UpdateProfileRequest request) {
-        return ResponseEntity.ok(UserResponse.from(userService.updateProfile(user.getId(), request)));
+        return ResponseEntity.ok(authenticationService.updateProfile(user.getId(), request));
     }
 
     @Operation(summary = "Changer mon mot de passe")
     @PatchMapping("/password")
-    public ResponseEntity<Void> changePassword(
+    public ResponseEntity<AuthResponse> changePassword(
             @AuthenticationPrincipal User user,
             @Valid @RequestBody ChangePasswordRequest request) {
-        userService.changePassword(user.getId(), request);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(authenticationService.changePassword(user.getId(), request));
     }
 }

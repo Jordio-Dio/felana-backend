@@ -4,10 +4,12 @@ import com.friperie.felana.auth.domain.OtpPurpose;
 import com.friperie.felana.auth.domain.RefreshToken;
 import com.friperie.felana.auth.domain.Role;
 import com.friperie.felana.auth.domain.User;
+import com.friperie.felana.auth.dto.request.ChangePasswordRequest;
 import com.friperie.felana.auth.dto.request.ForgotPasswordRequest;
 import com.friperie.felana.auth.dto.request.LoginRequest;
 import com.friperie.felana.auth.dto.request.RegisterVendeurRequest;
 import com.friperie.felana.auth.dto.request.ResetPasswordRequest;
+import com.friperie.felana.auth.dto.request.UpdateProfileRequest;
 import com.friperie.felana.auth.dto.request.VerifyEmailRequest;
 import com.friperie.felana.auth.dto.response.AuthResponse;
 import com.friperie.felana.auth.repository.UserRepository;
@@ -29,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthenticationService {
 
     private final UserRepository userRepository;
+    private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
@@ -76,6 +79,33 @@ public class AuthenticationService {
         String newAccessToken = jwtService.generateAccessToken(user);
 
         return AuthResponse.of(user.getId(), newAccessToken, newRefreshToken.getToken(),user.getEmail(), user.getUsername(), user.getRole().name());
+    }
+
+    @Transactional
+    public AuthResponse updateProfile(Long userId, UpdateProfileRequest request) {
+        User user = userService.updateProfile(userId, request);
+        return issueNewTokenBundle(user);
+    }
+
+    @Transactional
+    public AuthResponse changePassword(Long userId, ChangePasswordRequest request) {
+        userService.changePassword(userId, request);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable après changement de mot de passe."));
+        return issueNewTokenBundle(user);
+    }
+
+    private AuthResponse issueNewTokenBundle(User user) {
+        String accessToken = jwtService.generateAccessToken(user);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+        return AuthResponse.of(
+                user.getId(),
+                accessToken,
+                refreshToken.getToken(),
+                user.getEmail(),
+                user.getUsername(),
+                user.getRole().name()
+        );
     }
 
     /**

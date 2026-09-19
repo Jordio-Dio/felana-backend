@@ -78,7 +78,7 @@ public class ClientAuthService {
     }
 
     @Transactional
-    public ClientResponse updateProfile(Long clientId, ClientUpdateProfileRequest request) {
+    public ClientAuthResponse updateProfile(Long clientId, ClientUpdateProfileRequest request) {
         Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Client introuvable."));
 
@@ -116,17 +116,21 @@ public class ClientAuthService {
             client.setEmailVerifie(false);
         }
 
-        return ClientResponse.from(clientRepository.save(client));
+        client = clientRepository.save(client);
+        String token = jwtService.generateClientToken(client);
+        return new ClientAuthResponse(client.getId(), token, client.getNom(), client.isEmailVerifie());
     }
 
     @Transactional
-    public void changePassword(Long clientId, ChangePasswordRequest request) {
+    public ClientAuthResponse changePassword(Long clientId, ChangePasswordRequest request) {
         Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Client introuvable."));
         if (!passwordEncoder.matches(request.currentPassword(), client.getPassword())) {
             throw new BadCredentialsException("Mot de passe actuel incorrect.");
         }
         client.setPassword(passwordEncoder.encode(request.newPassword()));
-        clientRepository.save(client);
+        client = clientRepository.save(client);
+        String token = jwtService.generateClientToken(client);
+        return new ClientAuthResponse(client.getId(), token, client.getNom(), client.isEmailVerifie());
     }
 }

@@ -4,6 +4,7 @@ import com.friperie.felana.auth.dto.request.ChangePasswordRequest;
 import com.friperie.felana.orders.domain.Client;
 import com.friperie.felana.orders.dto.response.ClientResponse;
 import com.friperie.felana.shop.dto.request.ClientUpdateProfileRequest;
+import com.friperie.felana.shop.dto.response.ClientAuthResponse;
 import com.friperie.felana.shop.service.ClientAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,7 +32,7 @@ public class ClientProfileController {
 
     @Operation(summary = "Modifier mon profil")
     @PatchMapping
-    public ResponseEntity<ClientResponse> updateProfile(
+    public ResponseEntity<ClientAuthResponse> updateProfile(
             @AuthenticationPrincipal Client client,
             @Valid @RequestBody ClientUpdateProfileRequest request) {
         return ResponseEntity.ok(clientAuthService.updateProfile(client.getId(), request));
@@ -39,10 +40,9 @@ public class ClientProfileController {
 
     @Operation(summary = "Changer mon mot de passe")
     @PatchMapping("/password")
-    public ResponseEntity<Void> changePassword(
+    public ResponseEntity<ClientAuthResponse> changePassword(
             @AuthenticationPrincipal Client client,
             @Valid @RequestBody ChangePasswordRequest request) {
-        clientAuthService.changePassword(client.getId(), request);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(clientAuthService.changePassword(client.getId(), request));
     }
 }

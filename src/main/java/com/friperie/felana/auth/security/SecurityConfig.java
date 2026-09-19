@@ -60,12 +60,15 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf.disable())
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .authorizeHttpRequests(auth -> auth
+                                                // 1. Swagger & Doc
                                                 .requestMatchers(
                                                                 "/v3/api-docs",
                                                                 "/v3/api-docs/**",
                                                                 "/swagger-ui/**",
                                                                 "/swagger-ui.html")
                                                 .permitAll()
+
+                                                // 2. Auth généraux
                                                 .requestMatchers(
                                                                 "/auth/login",
                                                                 "/auth/refresh-token",
@@ -74,15 +77,23 @@ public class SecurityConfig {
                                                                 "/auth/forgot-password",
                                                                 "/auth/reset-password")
                                                 .permitAll()
+
+                                                // 3. RÈGLES SPÉCIFIQUES AUTHENTIFIÉES (À METTRE AVANT LE MATCH ALL
+                                                // /v1/public/**)
                                                 .requestMatchers(
-                                                                "/v1/public/**",
-                                                                "/v1/public/client/register",
-                                                                "/v1/public/client/login")
-                                                .permitAll()
-                                                .requestMatchers("/v1/public/orders/", "/v1/public/mes-commandes").authenticated()
+                                                                "/v1/public/orders/**",
+                                                                "/v1/public/mes-commandes",
+                                                                "/v1/public/client/me")
+                                                .authenticated()
+
+                                                // 4. TOUTES LES AUTRES ROUTES PUBLIQUES CLIENT
+                                                .requestMatchers("/v1/public/**").permitAll()
+
+                                                // 5. Catégories et routes privées
                                                 .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/clients/**", "/commandes/**")
                                                 .authenticated()
+
                                                 .anyRequest().authenticated())
                                 .exceptionHandling(exception -> exception
                                                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
