@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 public record UpdateProfileRequest(
         @NotBlank(message = "Le nom est obligatoire")
         @Size(max = 100)
-        String nom,
+        String name,
 
         @NotBlank(message = "L'email est obligatoire")
         @Email(message = "Format d'email invalide")

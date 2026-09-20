@@ -66,7 +66,7 @@ public User updateProfile(Long userId, UpdateProfileRequest request) {
         throw new DataIntegrityViolationException("Cet email est déjà utilisé.");
     }
 
-    user.setName(request.nom());
+    user.setName(request.name());
     user.setEmail(request.email());
     if (emailChange) {
         user.setEmailVerified(false); // à revérifier, comme à l'inscription
