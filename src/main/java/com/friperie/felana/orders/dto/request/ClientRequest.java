@@ -10,8 +10,7 @@ public record ClientRequest(
         @Size(max = 100)
         String prenom,
 
-        @Email(message = "Format d'email invalide")
-        String email,
+
 
         @Size(max = 30)
         String telephone,

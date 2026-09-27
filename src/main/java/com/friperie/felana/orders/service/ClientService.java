@@ -30,7 +30,6 @@ public class ClientService {
         Client client = Client.builder()
                 .nom(request.nom())
                 .prenom(request.prenom())
-                .email(request.email())
                 .telephone(request.telephone())
                 .adresse(request.adresse())
                 .build();
@@ -42,7 +41,6 @@ public class ClientService {
         Client client = findEntityById(id);
         client.setNom(request.nom());
         client.setPrenom(request.prenom());
-        client.setEmail(request.email());
         client.setTelephone(request.telephone());
         client.setAdresse(request.adresse());
         return clientRepository.save(client);

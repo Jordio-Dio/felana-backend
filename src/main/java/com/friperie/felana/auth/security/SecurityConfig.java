@@ -81,10 +81,12 @@ public class SecurityConfig {
                                                 // 3. RÈGLES SPÉCIFIQUES AUTHENTIFIÉES (À METTRE AVANT LE MATCH ALL
                                                 // /v1/public/**)
                                                 .requestMatchers(
-                                                                "/v1/public/orders/**",
-                                                                "/v1/public/mes-commandes",
-                                                                "/v1/public/client/me")
-                                                .authenticated()
+                                                                "/v1/public/articles",
+                                                                "/v1/public/articles/**",
+                                                                "/v1/public/client/register",
+                                                                "/v1/public/client/login",
+                                                                "/v1/public/orders")
+                                                .permitAll()
 
                                                 // 4. TOUTES LES AUTRES ROUTES PUBLIQUES CLIENT
                                                 .requestMatchers("/v1/public/**").permitAll()

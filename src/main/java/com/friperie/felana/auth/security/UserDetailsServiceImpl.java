@@ -29,7 +29,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String identifiant) throws UsernameNotFoundException {
         return userRepository.findByEmail(identifiant)
                 .<UserDetails>map(u -> u)
-                .or(() -> clientRepository.findByEmail(identifiant).map(c -> c))
+            
                 .or(() -> clientRepository.findByTelephone(identifiant).map(c -> c))
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "Aucun compte trouvé pour : " + identifiant));

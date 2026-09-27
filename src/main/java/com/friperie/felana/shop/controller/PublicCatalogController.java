@@ -46,7 +46,6 @@ public class PublicCatalogController {
         return ResponseEntity.ok(publicShopService.findArticleById(id));
     }
 
-    @PreAuthorize("hasRole('CLIENT')")
     @PostMapping("/orders")
     public ResponseEntity<PublicOrderResponse> createOrder(@Valid @RequestBody PublicOrderRequest request,
             @AuthenticationPrincipal Client client) {
