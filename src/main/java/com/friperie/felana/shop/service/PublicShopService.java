@@ -74,7 +74,7 @@ public class PublicShopService {
         Commande commande = Commande.builder()
                 .reference(genererReference())
                 .statut(StatutCommande.EN_ATTENTE_VALIDATION)
-                .client(clientConnecte)
+                .client(client)
                 .vendeur(null) // pas de vendeur pour une commande en ligne
                 .modePaiement(request.modePaiement().name())
                 .totalAchat(BigDecimal.ZERO)

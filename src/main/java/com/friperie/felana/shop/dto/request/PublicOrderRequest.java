@@ -15,7 +15,7 @@ public record PublicOrderRequest(
         String nomClient,
 
         @NotBlank(message = "Le téléphone est obligatoire")
-        @Size(max = 30)
+        @Size(max = 30, message = "Le numéro de téléphone ne peut pas dépasser 30 caractères")
         String telephone,
 
         @NotBlank(message = "L'adresse de livraison est obligatoire")

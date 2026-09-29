@@ -2,6 +2,7 @@ package com.friperie.felana.shop.controller;
 
 import com.friperie.felana.orders.domain.Client;
 import com.friperie.felana.orders.dto.response.CommandeResponse;
+import com.friperie.felana.orders.repository.ClientRepository;
 import com.friperie.felana.orders.service.CommandeService;
 import com.friperie.felana.shop.dto.ArticlePublicDTO;
 import com.friperie.felana.shop.dto.request.PublicOrderRequest;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 /**
  * Endpoints PUBLICS, sans authentification. Toute la sécurité repose ici
@@ -33,6 +35,7 @@ public class PublicCatalogController {
 
     private final PublicShopService publicShopService;
     private final CommandeService commandeService;
+    private final ClientRepository clientRepository;
 
     @Operation(summary = "Liste paginée des articles actifs du catalogue public")
     @GetMapping("/articles")
@@ -47,18 +50,37 @@ public class PublicCatalogController {
     }
 
     @PostMapping("/orders")
-    public ResponseEntity<PublicOrderResponse> createOrder(@Valid @RequestBody PublicOrderRequest request,
-            @AuthenticationPrincipal Client client) {
-        System.out.println("[ORDER-DEBUG] client=" + client);
-        if (client != null) {
-            System.out.println("[ORDER-DEBUG] client.id=" + client.getId() + " class=" + client.getClass().getName());
+public ResponseEntity<PublicOrderResponse> createOrder(
+        @Valid @RequestBody PublicOrderRequest request,
+        Authentication authentication) {
+    
+    Client client = null;
+
+    if (authentication != null 
+            && authentication.isAuthenticated() 
+            && !"anonymousUser".equals(authentication.getPrincipal())) {
+        
+        Object principal = authentication.getPrincipal();
+
+        // Cas 1 : Si le principal est directement l'objet Client
+        if (principal instanceof Client c) {
+            client = c;
+        } 
+        // Cas 2 : Si le principal est un UserDetails (Spring Security)
+        else if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
+            String identifier = userDetails.getUsername(); // Contient le téléphone ou username
+            
+            // Utilisez votre clientRepository injecté pour la recherche par téléphone
+            client = clientRepository.findByTelephone(identifier).orElse(null);
         }
-        if (client == null) {
-            throw new IllegalStateException("Client non authentifié correctement");
-        }
-        PublicOrderResponse response = publicShopService.createOrder(request, client);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    System.out.println("[ORDER-DEBUG] Client détecté : " + (client != null ? client.getId() : "Invité (Guest)"));
+
+    // La commande s'effectue avec le client s'il est connecté, ou en mode invité s'il vaut null
+    PublicOrderResponse response = publicShopService.createOrder(request, client);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+}
 
     @PreAuthorize("hasRole('CLIENT')")
     @Operation(summary = "Historique des commandes du client connecté")
