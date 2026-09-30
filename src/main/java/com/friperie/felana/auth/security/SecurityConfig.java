@@ -88,10 +88,21 @@ public class SecurityConfig {
                                                                 "/v1/public/orders")
                                                 .permitAll()
 
-                                                // 4. TOUTES LES AUTRES ROUTES PUBLIQUES CLIENT
+                                                // 4. **ROUTES PUBLIQUES CLIENT - Login & Registration**
+                                                .requestMatchers(
+                                                                "/v1/public/client/register",
+                                                                "/v1/public/client/login"
+                                                )
+                                                .permitAll()
+
+                                                // 5. Profil client - nécessite authentification avec rôle CLIENT
+                                                .requestMatchers("/v1/public/client/me").hasRole("CLIENT")
+                                                .requestMatchers("/v1/public/client/me/**").hasRole("CLIENT")
+
+                                                // 6. Autres routes publiques client (articles, etc.)
                                                 .requestMatchers("/v1/public/**").permitAll()
 
-                                                // 5. Catégories et routes privées
+                                                // 7. Catégories et routes privées
                                                 .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/clients/**", "/commandes/**")
                                                 .authenticated()

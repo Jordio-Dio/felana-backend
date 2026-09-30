@@ -25,12 +25,37 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
     private final ClientRepository clientRepository;
 
+    private static String normalizeTelephone(String telephone) {
+        if (telephone == null) {
+            return null;
+        }
+
+        String digits = telephone.trim().replaceAll("\\s+", "");
+        digits = digits.replace("+", "");
+        digits = digits.replaceAll("[^0-9]", "");
+
+        if (digits.isEmpty()) {
+            return "";
+        }
+
+        if (digits.startsWith("261")) {
+            digits = "0" + digits.substring(3);
+        }
+
+        if (!digits.startsWith("0") && digits.length() == 9) {
+            digits = "0" + digits;
+        }
+
+        return digits;
+    }
+
     @Override
     public UserDetails loadUserByUsername(String identifiant) throws UsernameNotFoundException {
+        String normalizedIdentifiant = normalizeTelephone(identifiant);
+
         return userRepository.findByEmail(identifiant)
                 .<UserDetails>map(u -> u)
-            
-                .or(() -> clientRepository.findByTelephone(identifiant).map(c -> c))
+                .or(() -> clientRepository.findByTelephone(normalizedIdentifiant).map(c -> c))
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "Aucun compte trouvé pour : " + identifiant));
     }

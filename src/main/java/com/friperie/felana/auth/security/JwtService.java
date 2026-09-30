@@ -121,6 +121,12 @@ public class JwtService {
     }
 
     public String extractType(String token) {
-    return extractClaim(token, claims -> claims.get("type", String.class));
-}
+        return extractClaim(token, claims -> claims.get("type", String.class));
+    }
+
+    public boolean isClientToken(String token) {
+        String type = extractType(token);
+        String role = extractClaim(token, claims -> claims.get("role", String.class));
+        return "CLIENT".equals(type) && "ROLE_CLIENT".equals(role);
+    }
 }

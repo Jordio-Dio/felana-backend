@@ -10,7 +10,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/public/client")
@@ -26,9 +29,27 @@ public class ClientAuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(clientAuthService.register(request));
     }
 
-    @Operation(summary = "Connexion d'un client (email ou téléphone)")
+   @Operation(summary = "Connexion d'un client (email ou téléphone)")
     @PostMapping("/login")
-    public ResponseEntity<ClientAuthResponse> login(@Valid @RequestBody ClientLoginRequest request) {
-        return ResponseEntity.ok(clientAuthService.login(request));
-    }
-}
+    public ResponseEntity<?> login(@Valid @RequestBody ClientLoginRequest request) {
+        try {
+            ClientAuthResponse response = clientAuthService.login(request);
+            
+            // On utilise .token() au lieu de .getAccessToken() car c'est un record Java
+            if (response == null || response.token() == null || response.token().isBlank()) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("message", "Numéro de téléphone ou mot de passe incorrect."));
+            }
+
+            return ResponseEntity.ok(response);
+        } catch (BadCredentialsException e) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Numéro de téléphone ou mot de passe incorrect."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }}

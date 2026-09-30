@@ -23,28 +23,52 @@ public class ClientAuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
+    private static String normalizeTelephone(String telephone) {
+        if (telephone == null) {
+            return null;
+        }
+
+        String digits = telephone.trim().replaceAll("\\s+", "");
+        digits = digits.replace("+", "");
+        digits = digits.replaceAll("[^0-9]", "");
+
+        if (digits.isEmpty()) {
+            return "";
+        }
+
+        if (digits.startsWith("261")) {
+            digits = "0" + digits.substring(3);
+        }
+
+        if (!digits.startsWith("0") && digits.length() == 9) {
+            digits = "0" + digits;
+        }
+
+        return digits;
+    }
+
     @Transactional
     public ClientAuthResponse register(ClientRegisterRequest request) {
         if (request.telephone() == null || request.telephone().isBlank()) {
             throw new IllegalArgumentException("Le numéro de téléphone est obligatoire.");
         }
 
-        // Si la fiche existe déjà (créée lors d'une commande invité)
-        Client client = clientRepository.findByTelephone(request.telephone())
+        String normalizedTelephone = normalizeTelephone(request.telephone());
+
+        Client client = clientRepository.findByTelephone(normalizedTelephone)
                 .orElseGet(() -> Client.builder()
                         .nom(request.nom())
                         .prenom(request.prenom())
-                        .telephone(request.telephone())
+                        .telephone(normalizedTelephone)
                         .build());
 
-        // Si le client a déjà un compte actif avec mot de passe
         if (client.isCompteActif() && client.getPassword() != null) {
             throw new IllegalArgumentException("Ce numéro de téléphone est déjà associé à un compte.");
         }
 
-        // Activation du compte et enregistrement du mot de passe
         client.setNom(request.nom());
         client.setPrenom(request.prenom());
+        client.setTelephone(normalizedTelephone);
         client.setPassword(passwordEncoder.encode(request.password()));
         client.setCompteActif(true);
 
@@ -56,8 +80,9 @@ public class ClientAuthService {
 
     @Transactional(readOnly = true)
     public ClientAuthResponse login(ClientLoginRequest request) {
-        // Authentification uniquement via le numéro de téléphone
-        Client client = clientRepository.findByTelephone(request.identifiant())
+        String normalizedTelephone = normalizeTelephone(request.identifiant());
+
+        Client client = clientRepository.findByTelephone(normalizedTelephone)
                 .orElseThrow(() -> new BadCredentialsException("Téléphone ou mot de passe incorrect."));
 
         if (!client.isCompteActif() || client.getPassword() == null || !passwordEncoder.matches(request.password(), client.getPassword())) {
@@ -77,9 +102,10 @@ public class ClientAuthService {
             throw new IllegalArgumentException("Le numéro de téléphone est obligatoire.");
         }
 
-        boolean telephoneChange = !client.getTelephone().equals(request.telephone());
+        String normalizedTelephone = normalizeTelephone(request.telephone());
+        boolean telephoneChange = !client.getTelephone().equals(normalizedTelephone);
         if (telephoneChange) {
-            clientRepository.findByTelephone(request.telephone()).ifPresent(existing -> {
+            clientRepository.findByTelephone(normalizedTelephone).ifPresent(existing -> {
                 if (!existing.getId().equals(clientId)) {
                     throw new IllegalArgumentException("Ce numéro de téléphone est déjà utilisé.");
                 }
@@ -88,7 +114,7 @@ public class ClientAuthService {
 
         client.setNom(request.nom());
         client.setPrenom(request.prenom());
-        client.setTelephone(request.telephone());
+        client.setTelephone(normalizedTelephone);
         client.setAdresse(request.adresse());
 
         client = clientRepository.save(client);
